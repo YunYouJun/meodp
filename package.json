@@ -5,7 +5,8 @@
   "description": "Straight eye of death.",
   "module": "src/index.ts",
   "scripts": {
-    "dev": "src/index.ts",
+    "dev": "npm run example",
+    "example": "vite-node examples/check-site.ts",
     "test": "npm run test:e2e",
     "test:e2e": "pnpm exec playwright test",
     "lint": "eslint .",
@@ -26,6 +27,7 @@
     "cilicili": "^0.0.3",
     "eslint": "^9.13.0",
     "eslint-plugin-format": "^0.1.2",
-    "playwright": "^1.48.1"
+    "playwright": "^1.48.1",
+    "vite-node": "^2.1.3"
   }
 }
