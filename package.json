@@ -1,0 +1,29 @@
+{
+  "name": "seod",
+  "type": "module",
+  "description": "Straight eye of death.",
+  "module": "src/index.ts",
+  "scripts": {
+    "dev": "src/index.ts",
+    "test": "playwright test",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "consola": "^3.2.3"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^3.8.0",
+    "@playwright/test": "^1.48.1",
+    "@types/bun": "latest",
+    "@types/node": "^22.7.7",
+    "@unocss/eslint-plugin": "^0.63.4",
+    "cilicili": "^0.0.3",
+    "eslint": "^9.13.0",
+    "eslint-plugin-format": "^0.1.2",
+    "playwright": "^1.48.1"
+  }
+}
