@@ -6,7 +6,8 @@
   "module": "src/index.ts",
   "scripts": {
     "dev": "src/index.ts",
-    "test": "playwright test",
+    "test": "npm run test:e2e",
+    "test:e2e": "pnpm exec playwright test",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
