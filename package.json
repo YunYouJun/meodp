@@ -1,6 +1,7 @@
 {
   "name": "seod",
   "type": "module",
+  "packageManager": "pnpm@9.12.2",
   "description": "Straight eye of death.",
   "module": "src/index.ts",
   "scripts": {
