@@ -9,7 +9,10 @@ export let browser: Browser
  */
 export async function getBrowser() {
   if (!browser) {
-    browser = await chromium.launch()
+    browser = await chromium.launch({
+      // 15s
+      timeout: 15000,
+    })
   }
   return browser
 }

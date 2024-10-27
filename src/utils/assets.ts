@@ -3,6 +3,8 @@ import { url } from 'node:inspector'
 import process from 'node:process'
 import { cursorTo, moveCursor } from 'node:readline'
 import { consoleInnerInfo, errorStart, lineStart, successStart } from 'cilicili'
+import { Presets, SingleBar } from 'cli-progress'
+
 import consola from 'consola'
 
 import { colors } from 'consola/utils'
@@ -69,21 +71,73 @@ export async function checkPageAssets(page: Page) {
   await page.goto
 }
 
+export interface UrlInfo {
+  /**
+   * request time
+   */
+  requestTime: number
+  /**
+   * response time
+   */
+  responseTime: number
+  /**
+   * status code
+   */
+  status: number
+}
+
 export function registerPageEvents(page: Page) {
-  const urlMap = new Map<string, number>()
+  const urlMap = new Map<string, UrlInfo>()
+
+  // 响应数量
+  let respondNum = 0
+
+  // const b = new SingleBar({}, Presets.shades_classic)
+  const b = new SingleBar({
+    format: '[{bar}] {percentage}% | ETA: {eta}s | {value}/{total} | {filename}',
+    // barCompleteChar: '\u2588',
+    // barIncompleteChar: '\u2591',
+    hideCursor: true,
+    // clearOnComplete: false,
+  }, Presets.shades_grey)
 
   // 监听所有的网络请求
   page.on('request', (request) => {
-    urlMap.set(request.url(), Date.now())
+    if (urlMap.size === 0) {
+      b.start(100, 0)
+    }
+
+    const requestUrl = request.url()
+    if (requestUrl && !urlMap.has(requestUrl)) {
+      urlMap.set(requestUrl, {
+        requestTime: Date.now(),
+        responseTime: 0,
+        /**
+         * unknown status
+         */
+        status: 0,
+      })
+    }
+
+    b.setTotal(urlMap.size)
   })
 
   // 监听所有的网络响应
   page.on('response', (response) => {
     // console.log('<<', response.status(), response.url())
-    const startTime = urlMap.get(response.url()) || Date.now()
-    const duration = Date.now() - startTime
+    const urlInfo = urlMap.get(response.url())
+    if (!urlInfo)
+      return
+    if (urlInfo.responseTime)
+      return
 
-    const statusCode = response?.status() || 'unknown'
+    respondNum += 1
+    urlInfo.responseTime = Date.now()
+    const duration = urlInfo.responseTime - urlInfo.requestTime
+
+    const statusCode = response?.status()
+    urlInfo.status = statusCode
+
     const linkTxt = colors.dim(response.url())
     const statusText = response?.statusText()
     const statusInfo = statusText ? `${statusCode?.toString()} ${statusText}` : statusCode?.toString()
@@ -94,10 +148,17 @@ export function registerPageEvents(page: Page) {
     }
     else {
       // consoleInnerInfo(colors.dim(successStart), colors.dim(colors.green(statusInfo)), durationTxt, linkTxt)
-      process.stdout.write(`${lineStart} ${colors.dim(successStart)} ${colors.dim(colors.green(statusInfo))} ${durationTxt} ${linkTxt}`)
-      process.stdout.clearLine(0)
+      consola.debug(colors.dim(successStart), colors.dim(colors.green(statusInfo)), durationTxt, linkTxt)
+      // process.stdout.write(`${lineStart} ${colors.dim(successStart)} ${colors.dim(colors.green(statusInfo))} ${durationTxt} ${linkTxt}`)
+      // process.stdout.clearLine(0)
       // 光标移动到开头，覆盖输出
-      cursorTo(process.stdout, 0)
+      // cursorTo(process.stdout, 0)
     }
+
+    b.update(respondNum, {
+      filename: colors.dim(response.url()),
+    })
   })
+
+  return urlMap
 }
