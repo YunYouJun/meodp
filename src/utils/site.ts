@@ -94,40 +94,72 @@ export async function checkUrlNomoduleAssets(page: Page) {
  * check site url
  * @param url
  */
-export async function checkSiteUrl(url: string) {
+export async function checkSiteUrl(url: string, options: {
+  /**
+   * 检查页面中的资源加载
+   * - css
+   * - js
+   * - img
+   */
+  checkAssets?: boolean
+  /**
+   * 检查 nomodule 资源
+   */
+  checkNoModule?: boolean
+  /**
+   * 忽略的资源
+   */
+  ignore?: string[]
+} = {}) {
   const browser = await getBrowser()
   const page = await browser.newPage()
 
   const startTime = Date.now()
-  const urlMap = registerPageEvents(page)
-  consola.start('Checking site internal url:', colors.cyan(url))
-  await page.goto(url, {
-    waitUntil: 'networkidle',
-  }).catch((e) => {
-    consola.error(e)
-  })
-  console.log()
 
-  const successCount = Array.from(urlMap.values()).filter(value => value.status && value.status < 400).length
-  const errorCount = urlMap.size - successCount
-  const timeoutCount = Array.from(urlMap.values()).filter(value => !value.responseTime).length
+  if (options.checkAssets) {
+    const urlMap = registerPageEvents(page)
+    consola.start('Checking site internal url:', colors.cyan(url))
+    await page.goto(url, {
+      waitUntil: 'networkidle',
+    }).catch((e) => {
+      consola.error(e)
+    })
+    console.log()
 
-  const duration = (Date.now() - startTime) / 1000
-  const timeoutTxt = timeoutCount ? colors.redBright(colors.redBright(`(🚫 ${timeoutCount} Timeout)`)) : ''
-  console.log()
-  consola.log(
-    `🔍 ${urlMap.size} Total ${colors.dim(`(in ${duration}s)`)}.`,
-    `✅ ${colors.green(`${successCount} OK`)}`,
-    `❌ ${colors.red(`${errorCount} Errors`)} ${timeoutTxt}`,
-  )
+    const successCount = Array.from(urlMap.values()).filter(value => value.status && value.status < 400).length
+    const errorCount = urlMap.size - successCount
+    const timeoutCount = Array.from(urlMap.values()).filter(value => !value.responseTime).length
 
-  urlMap.forEach((value, key) => {
-    if (!value.responseTime) {
-      console.error(lineStart, `Resource loading timeout: ${colors.dim(key)}`)
+    const duration = (Date.now() - startTime) / 1000
+    const timeoutTxt = timeoutCount ? colors.redBright(colors.redBright(`(🚫 ${timeoutCount} Timeout)`)) : ''
+    console.log()
+    consola.log(
+      `🔍 ${urlMap.size} Total ${colors.dim(`(in ${duration}s)`)}.`,
+      `✅ ${colors.green(`${successCount} OK`)}`,
+      `❌ ${colors.red(`${errorCount} Errors`)} ${timeoutTxt}`,
+    )
+
+    for (const [url, info] of urlMap) {
+      if (!info.responseTime) {
+      // retry
+        try {
+          const res = await page.goto(url, {
+            waitUntil: 'networkidle',
+          })
+          const status = res?.status() || 0
+          if (status >= 400) {
+            console.error(lineStart, `Resource loading error: ${colors.underline(url)}`)
+          }
+        }
+        catch (e) {
+          consola.error(e)
+          console.error(lineStart, `Resource loading timeout: ${colors.underline(url)}`)
+        }
+      }
     }
-  })
 
-  await checkUrlNomoduleAssets(page)
+    await checkUrlNomoduleAssets(page)
+  }
 
   const links = await getSiteLinks(page)
   for (const link of links) {

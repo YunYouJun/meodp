@@ -2,10 +2,10 @@ import { checkSite, checkSiteUrl } from '../src'
 
 export async function main() {
   // const siteUrl = 'https://www.yunyoujun.cn'
-  const siteUrl = 'https://cover.weixin.qq.com'
+  const siteHomeUrl = 'https://cover.weixin.qq.com'
 
-  // await checkSite(siteUrl)
-  await checkSiteUrl(siteUrl)
+  // await checkSite(siteHomeUrl)
+  await checkSiteUrl(siteHomeUrl)
 }
 
 main()
