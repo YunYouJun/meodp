@@ -1,15 +1,15 @@
 import type { Page } from 'playwright'
+import type { SEODConfig, SEODUrlProps } from '../../types'
 import { url } from 'node:inspector'
-import process from 'node:process'
 import { cursorTo, moveCursor } from 'node:readline'
 import { consoleInnerInfo, errorStart, lineStart, successStart } from 'cilicili'
-import { Presets, SingleBar } from 'cli-progress'
 
 import consola from 'consola'
-
 import { colors } from 'consola/utils'
+import { progressBarMap } from '../progress'
 
 /**
+ * @deprecated use playwright goto instead
  * check all assets in the page can be loaded
  * - css
  * - js
@@ -86,25 +86,26 @@ export interface UrlInfo {
   status: number
 }
 
-export function registerPageEvents(page: Page) {
+export function registerPageEvents(page: Page, urlItem: SEODUrlProps) {
   const urlMap = new Map<string, UrlInfo>()
 
   // 响应数量
   let respondNum = 0
 
   // const b = new SingleBar({}, Presets.shades_classic)
-  const b = new SingleBar({
-    format: '[{bar}] {percentage}% | ETA: {eta}s | {value}/{total} | {filename}',
-    // barCompleteChar: '\u2588',
-    // barIncompleteChar: '\u2591',
-    hideCursor: true,
-    // clearOnComplete: false,
-  }, Presets.shades_grey)
+  // const curBar = new SingleBar({
+  //   format: '   🔗 {bar} {percentage}% | {value}/{total} | {duration_formatted} | {filename}',
+  //   // barCompleteChar: '\u2588',
+  //   // barIncompleteChar: '\u2591',
+  //   hideCursor: true,
+  //   clearOnComplete: false,
+  // }, Presets.rect)
+  const curBar = progressBarMap.get('CURRENT')
 
   // 监听所有的网络请求
   page.on('request', (request) => {
     if (urlMap.size === 0) {
-      b.start(100, 0)
+      curBar?.start(1, 0)
     }
 
     const requestUrl = request.url()
@@ -119,7 +120,7 @@ export function registerPageEvents(page: Page) {
       })
     }
 
-    b.setTotal(urlMap.size)
+    curBar?.setTotal(urlMap.size)
   })
 
   // 监听所有的网络响应
@@ -155,8 +156,9 @@ export function registerPageEvents(page: Page) {
       // cursorTo(process.stdout, 0)
     }
 
-    b.update(respondNum, {
-      filename: colors.dim(response.url()),
+    curBar?.update(respondNum, {
+      site: urlItem.url,
+      url: colors.dim(response.url()),
     })
   })
 

@@ -3,14 +3,32 @@
   "type": "module",
   "packageManager": "pnpm@9.12.3",
   "description": "Straight eye of death. Find out dead links in your site.",
-  "module": "src/index.ts",
+  "keywords": [
+    "seod",
+    "check"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "bin": {
+    "seod-ts": "bin/index.ts",
     "seod": "dist/index.mjs"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "unbuild",
     "dev": "unbuild --stub",
     "demo": "npm run example",
+    "demo:app": "pnpm -C examples/app run dev",
     "example": "vite-node examples/check-site.ts",
     "test": "npm run test:e2e",
     "test:e2e": "pnpm exec playwright test",
@@ -25,6 +43,9 @@
     "c12": "^2.0.1",
     "cli-progress": "^3.12.0",
     "consola": "^3.2.3",
+    "date-fns": "^4.1.0",
+    "fs-extra": "^11.2.0",
+    "p-queue": "^8.0.1",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
@@ -32,7 +53,8 @@
     "@playwright/test": "^1.48.2",
     "@types/bun": "latest",
     "@types/cli-progress": "^3.11.6",
-    "@types/node": "^22.8.4",
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^22.8.6",
     "@types/yargs": "^17.0.33",
     "@unocss/eslint-plugin": "^0.63.6",
     "cilicili": "^0.0.4",

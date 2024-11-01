@@ -21,6 +21,12 @@ export default defineConfig({
 
 - [lychee](https://lychee.cli.rs/)
 
+## Logs
+
+```bash
+logs/seod
+```
+
 ## FAQ
 
 ### 与 lychee 的区别

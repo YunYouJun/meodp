@@ -3,8 +3,4 @@
 
 import { run } from '../dist/cli/index.mjs'
 
-function main() {
-  run()
-}
-
-main()
+run()
