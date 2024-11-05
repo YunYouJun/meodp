@@ -6,7 +6,7 @@ import consola from 'consola'
 import { colors } from 'consola/utils'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
-import { runByConfig, SEOD } from '../core'
+import { defaultSEODConfig, runByConfig, SEOD } from '../core'
 import { commonOptions } from './options'
 
 // export const __DEV__ = process.env.NODE_ENV === 'development'
@@ -33,21 +33,25 @@ export const cli = yargs(hideBin(process.argv))
       const { config, configFile } = await loadConfig<SEODConfig>({
         cwd: root,
         name: 'seod',
+        defaultConfig: defaultSEODConfig,
       })
+      await SEOD.init(config)
+
       debug('config', config)
-      debug('configFile', configFile)
+      SEOD.logger.info(`🛠️ Config File: ${configFile}`)
 
       SEOD.config = config
       SEOD.configFile = configFile || ''
 
-      consola.start('Start checking links...')
+      SEOD.logger.start('🌐 Start checking links...')
 
       const startTime = Date.now()
       await runByConfig(config)
       const endTime = Date.now()
       const duration = endTime - startTime
+
       console.log()
-      consola.success('Done!', `耗时 ${colors.yellow(duration / 1000)}s`)
+      SEOD.logger.success(`All done! in ${colors.yellow(duration / 1000)}s.`)
 
       // caused by multiBar?
       process.exit(0)

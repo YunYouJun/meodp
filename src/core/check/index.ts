@@ -1,7 +1,8 @@
-import type { SEODConfig, SEODUrlItem } from '../../types'
-import consola from 'consola'
+import type { SEODUrlItem } from '../../types'
 import { colors } from 'consola/utils'
-import { multiBar, progressBarMap } from '../progress'
+import { SEOD } from '../env'
+import { progressBarMap } from '../progress'
+import { getSEODUrlItemInfo } from '../utils'
 import { checkLink } from './link'
 import { checkSite } from './site'
 // import { checkSiteMap } from './sitemap'
@@ -21,6 +22,13 @@ export async function checkSEODUrl(seodUrl: SEODUrlItem) {
     }
   }
 
+  const { type, url, emoji } = getSEODUrlItemInfo(seodUrl)
+  SEOD.logger.log()
+  SEOD.logger.start(`${emoji} ${colors.yellow(`[${type}]`)} ${colors.cyan(url)}`)
+  // seodUrl
+
+  const startTime = Date.now()
+
   if (typeof seodUrl === 'object') {
     switch (seodUrl.type) {
       case 'site':
@@ -37,6 +45,10 @@ export async function checkSEODUrl(seodUrl: SEODUrlItem) {
     }
   }
 
+  const duration = Date.now() - startTime
+
   const bar = progressBarMap.get(seodUrl.url)
   bar?.stop()
+
+  SEOD.logger.success(`Done in ${duration / 1000}s.`)
 }

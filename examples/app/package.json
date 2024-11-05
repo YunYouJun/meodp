@@ -1,7 +1,8 @@
 {
   "name": "app",
   "scripts": {
-    "dev": "seod-ts",
+    "dev": "tsx node_modules/seod/bin/index.ts",
+    "dev:bin": "seod-ts",
     "start": "seod"
   },
   "devDependencies": {

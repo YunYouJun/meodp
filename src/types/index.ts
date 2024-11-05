@@ -1,3 +1,5 @@
+export * from './event'
+
 /**
  * - site: 站点主页链接，将会检查对应的 sitemap
  * - url: 单个页面链接
@@ -6,6 +8,14 @@
 export type SEODUrlType = 'site' | 'link' | 'sitemap'
 
 export interface SEODUrlProps {
+  /**
+   * @desc emoji
+   */
+  emoji?: string
+  /**
+   * @desc 日志名称
+   */
+  name?: string
   /**
    * - site: 站点主页链接，将会检查对应的 sitemap
    * - url: 单个页面链接
@@ -33,10 +43,38 @@ export type SEODUrlItem = string | SEODUrlProps
 
 export interface SEODConfig {
   /**
+   * @desc 是否清理缓存日志
+   * @default false
+   */
+  clean?: boolean
+  /**
+   * @desc 是否开启 debug 模式
+   * @default false
+   */
+  debug?: boolean
+  /**
    * urls
    * 可以是多种类型 @ref SiteUrlConfig
    */
   urls: SEODUrlItem[]
+
+  /**
+   * 日志形式
+   */
+  log?: {
+    /**
+     * @default 'raw'
+     * @desc 日志类型
+     * - progress: 进度条
+     * - raw: 原始输出
+     */
+    type: 'progress' | 'raw'
+    /**
+     * @desc 是否输出到文件
+     * @default true
+     */
+    file?: boolean
+  }
 
   /**
    * @desc 是否检查页面上的资源，包括图片、CSS、JS等

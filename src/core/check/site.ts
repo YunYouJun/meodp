@@ -1,14 +1,15 @@
 import type { Page } from 'playwright'
-import type { SEODConfig, SEODUrlProps } from '../../types'
+import type { SEODUrlProps } from '../../types'
 import { consoleInnerInfo, errorStart, lineStart, successStart } from 'cilicili'
 import consola from 'consola'
 import { colors } from 'consola/utils'
 import PQueue from 'p-queue'
-import { __DEV__ } from '../../cli'
 import { PQueueMap, siteUrlMap } from '../cache'
 import { getBrowser, SEOD } from '../env'
-import { multiBar, progressBarMap } from '../progress'
+import { LocalLog } from '../logger'
+import { progressBarMap } from '../progress'
 import { registerPageEvents } from '../utils/assets'
+import { parseUrlMap } from '../utils/parse'
 
 /**
  * 获取站点外链
@@ -30,7 +31,7 @@ export async function getSiteLinks(page: Page, options: CheckSiteUrlOptions) {
       return false
     }
 
-    const isExternalLink = link.startsWith('http') && !link.startsWith(options.site)
+    const isExternalLink = link.startsWith('http') && !link.startsWith(options.urlItem.url)
     if (!isExternalLink) {
       if (link.startsWith('/')) {
         if (filterQuery) {
@@ -59,7 +60,12 @@ export async function checkUrlNomoduleAssets(page: Page) {
     return elements
       .map(element => element.getAttribute('nomodule'))
       .filter(Boolean)
-  })
+  }).catch((e) => {
+    consola.error(e)
+  }) || []
+
+  if (!legacyScripts.length)
+    return true
 
   const browser = await getBrowser()
   const context = await browser.newContext()
@@ -101,10 +107,7 @@ export async function checkUrlNomoduleAssets(page: Page) {
 }
 
 export interface CheckSiteUrlOptions {
-  /**
-   * 站点地址
-   */
-  site: string
+  urlItem: SEODUrlProps
   /**
    * 检查 nomodule 资源
    */
@@ -119,15 +122,14 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
   const browser = await getBrowser()
   const page = await browser.newPage()
 
-  const bar = progressBarMap.get(options.site)
+  const bar = progressBarMap.get(options.urlItem.url)
   const startTime = Date.now()
 
-  const isExternalLink = url.startsWith('http') && !url.startsWith(options.site)
+  const isExternalLink = url.startsWith('http') && !url.startsWith(options.urlItem.url)
 
-  const urlMap = registerPageEvents(page, {
-    type: 'site',
-    url: options.site,
-  })
+  const log = LocalLog.createLog(options.urlItem)
+
+  const urlMap = registerPageEvents(page, options.urlItem)
   const res = await page.goto(url, {
     waitUntil: 'networkidle',
   }).catch((e) => {
@@ -139,41 +141,43 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
     checkStatus: 'goto',
   })
 
-  const successCount = Array.from(urlMap.values()).filter(value => value.status && value.status < 400).length
-  const errorCount = urlMap.size - successCount
-  const timeoutCount = Array.from(urlMap.values()).filter(value => !value.responseTime).length
+  const { success, error, total } = parseUrlMap(urlMap)
 
   const duration = (Date.now() - startTime) / 1000
-  const timeoutTxt = timeoutCount ? colors.redBright(colors.redBright(`(🚫 ${timeoutCount} Timeout)`)) : ''
-  consola.debug(
+  const statusText = res?.statusText()
+  SEOD.logger.log(
+    lineStart,
     '  ',
-    `🔍 ${colors.cyan(url)} ${urlMap.size} Total ${colors.dim(`(in ${duration}s)`)}.`,
-    `✅ ${colors.green(`${successCount} OK`)}`,
-    `❌ ${colors.red(`${errorCount} Errors`)} ${timeoutTxt}`,
+    colors.green(`[${statusCode}${statusText ? ` ${statusText}` : ''}]`),
+    colors.cyan(url),
+    colors.dim(`(in ${duration}s)`),
+    total.text,
+    success.text,
+    error.text,
   )
-  bar?.update(successCount, {
-    value: colors.green(successCount),
-    error_count: errorCount ? colors.red(errorCount) : 0,
-  })
+  log(
+    `[${statusCode}${statusText ? ` ${statusText}` : ''}] ${url}`,
+    `🔍 ${urlMap.size} Total Requests (in ${duration}s).`,
+    success.text,
+    error.text,
+  )
+  log()
+
+  if (SEOD.config.log?.type === 'progress') {
+    bar?.update(success.count, {
+      value: colors.green(success.count),
+      error_count: error.count ? colors.red(error.count) : 0,
+    })
+  }
+  else {
+    // logger.info()
+  }
+
+  // @TODO retry
 
   for (const [url, info] of urlMap) {
-    if (!info.responseTime) {
-      // retry
-      try {
-        const res = await page.goto(url, {
-          waitUntil: 'networkidle',
-        })
-        const status = res?.status() || 0
-        if (status >= 400) {
-          console.error(lineStart, `Resource loading error: ${colors.underline(url)}`)
-        }
-      }
-      catch (e) {
-        console.error(lineStart, `Resource loading timeout: ${colors.underline(url)}`)
-        if (__DEV__) {
-          consola.error(e)
-        }
-      }
+    if (!info.response) {
+      SEOD.logger.error(lineStart, `Resource loading timeout: ${colors.underline(url)}`)
     }
   }
 
@@ -184,7 +188,7 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
 
   // 所有资源加载成功，设置为通过
   const urlMapValues = Array.from(urlMap.values())
-  if (urlMapValues.every(value => value.status && value.status < 400) && noModuleAssetsPassed) {
+  if (urlMapValues.every(value => value.response?.status() && value.response?.status() < 400) && noModuleAssetsPassed) {
     siteUrlMap.set(url, {
       statusCode,
       checkStatus: 'passed',
@@ -250,13 +254,11 @@ export async function checkSite(props: SEODUrlProps) {
 
   bar?.setTotal(siteUrlMap.size)
   await checkSiteUrl(homeUrl, {
-    site: homeUrl,
+    urlItem: props,
     checkNoModule: true,
   })
 
   await queue.onIdle()
   await page.close()
   await context.close()
-
-  consola.debug('siteUrls:', siteUrlMap.values())
 }

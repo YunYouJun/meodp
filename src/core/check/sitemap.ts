@@ -1,7 +1,6 @@
-import type { SEODUrlItem, SEODUrlProps } from '../../types'
+import type { SEODUrlProps } from '../../types'
 import { siteUrlMap } from '../cache'
 import { getBrowser } from '../env'
-import { checkSiteUrl } from './site'
 
 /**
  * 检查站点地图
@@ -34,10 +33,10 @@ export async function checkSiteMap(urlItem: SEODUrlProps) {
         statusCode: 0,
         checkStatus: 'pending',
       })
-      const url = new URL(link).href
-      await checkSiteUrl(url, {
-        site: url,
-      })
+      // const url = new URL(link).href
+      // await checkSiteUrl(url, {
+      //   site: url,
+      // })
     }
   }
 }

@@ -28,7 +28,8 @@ const formatter: cliProgress.GenericFormatter = (options, params, payload) => {
     options = Object.assign({}, options, cliProgress.Presets.rect)
     Options.assignDerivedOptions(options)
     const bar = formatBar(params.progress, options)
-    const { url, site } = payload
+    const { site } = payload
+    const url = (payload.url || '')
     return `${bar} ${value}/${total} | ${colors.yellow(site || 'SEOD Item')} | ${colors.cyan(url || 'URL')}`
   }
   else {

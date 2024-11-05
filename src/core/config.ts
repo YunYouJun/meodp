@@ -1,58 +1,56 @@
 import type { SEODConfig } from '../types'
-import cliProgress from 'cli-progress'
 import consola from 'consola'
-import { colors } from 'consola/utils'
 import PQueue from 'p-queue'
 
 import { checkSEODUrl } from './check'
 import { getBrowser } from './env'
 import { multiBar, progressBarMap } from './progress'
+import { getSEODUrlItemInfo } from './utils'
 
 export const defaultSEODConfig: SEODConfig = {
-  urls: [
-    'https://www.example.com',
-  ],
+  urls: [],
   concurrency: 5,
+  log: {
+    type: 'raw',
+    file: true,
+  },
 }
 
 export function defineConfig(config: SEODConfig): SEODConfig {
-  return Object.assign({}, defaultSEODConfig, config)
+  return config
 }
 
 /**
  * 根据配置运行
  */
 export async function runByConfig(config: SEODConfig) {
-  const { urls } = config
+  const { urls, debug } = config
+  consola.level = debug ? 5 : 3
 
   const queue = new PQueue({
     concurrency: config.concurrency,
   })
 
-  const emojiMap = {
-    site: '🏠',
-    link: '🔗',
-    sitemap: '📄',
-  }
-
   // init progress bar
-  for (const urlItem of urls) {
-    const type = typeof urlItem === 'string' ? 'link' : urlItem.type
-    const url = typeof urlItem === 'string' ? urlItem : urlItem.url
-    const emoji = emojiMap[type] || '🔗'
+  if (config.log?.type === 'progress') {
+    for (const urlItem of urls) {
     // const name = `${emoji}(${colors.yellow(type)}) ${colors.cyan(url)}`
-    const bar = multiBar.create(1, 0, {
-      emoji,
-      url,
-      type,
-      error_count: 0,
+
+      const { type, url, emoji } = getSEODUrlItemInfo(urlItem)
+      const bar = multiBar.create(1, 0, {
+        emoji,
+        url,
+        type,
+        error_count: 0,
+      })
+      progressBarMap.set(url, bar)
+    }
+
+    const curBar = multiBar.create(1, 0, {
+      name: 'CURRENT',
     })
-    progressBarMap.set(url, bar)
+    progressBarMap.set('CURRENT', curBar)
   }
-  const curBar = multiBar.create(1, 0, {
-    name: 'CURRENT',
-  })
-  progressBarMap.set('CURRENT', curBar)
 
   const browser = await getBrowser()
   for (const urlItem of urls) {
@@ -62,7 +60,9 @@ export async function runByConfig(config: SEODConfig) {
   }
 
   await queue.onIdle()
-  multiBar.stop()
+  if (config.log?.type === 'progress') {
+    multiBar.stop()
+  }
   await browser.close()
   consola.debug('browser closed')
   return true

@@ -1,11 +1,11 @@
 import type { Page } from 'playwright'
-import type { SEODConfig, SEODUrlProps } from '../../types'
-import { url } from 'node:inspector'
-import { cursorTo, moveCursor } from 'node:readline'
-import { consoleInnerInfo, errorStart, lineStart, successStart } from 'cilicili'
+import type { PageUrlEvent, SEODUrlProps } from '../../types'
 
 import consola from 'consola'
 import { colors } from 'consola/utils'
+import { SEOD } from '../env'
+import { LocalLog } from '../logger'
+
 import { progressBarMap } from '../progress'
 
 /**
@@ -71,23 +71,11 @@ export async function checkPageAssets(page: Page) {
   await page.goto
 }
 
-export interface UrlInfo {
-  /**
-   * request time
-   */
-  requestTime: number
-  /**
-   * response time
-   */
-  responseTime: number
-  /**
-   * status code
-   */
-  status: number
-}
-
+// request
 export function registerPageEvents(page: Page, urlItem: SEODUrlProps) {
-  const urlMap = new Map<string, UrlInfo>()
+  const urlMap = new Map<string, PageUrlEvent>()
+
+  const log = LocalLog.createLog(urlItem)
 
   // 响应数量
   let respondNum = 0
@@ -109,14 +97,12 @@ export function registerPageEvents(page: Page, urlItem: SEODUrlProps) {
     }
 
     const requestUrl = request.url()
+    if (SEOD.isIgnoredLink(requestUrl))
+      return
+
     if (requestUrl && !urlMap.has(requestUrl)) {
       urlMap.set(requestUrl, {
-        requestTime: Date.now(),
-        responseTime: 0,
-        /**
-         * unknown status
-         */
-        status: 0,
+        request,
       })
     }
 
@@ -125,40 +111,46 @@ export function registerPageEvents(page: Page, urlItem: SEODUrlProps) {
 
   // 监听所有的网络响应
   page.on('response', (response) => {
-    // console.log('<<', response.status(), response.url())
+    const request = response.request()
+    urlMap.set(response.url(), {
+      request,
+      response,
+    })
+
     const urlInfo = urlMap.get(response.url())
     if (!urlInfo)
       return
-    if (urlInfo.responseTime)
+    if (urlInfo.response)
       return
 
     respondNum += 1
-    urlInfo.responseTime = Date.now()
-    const duration = urlInfo.responseTime - urlInfo.requestTime
+    // const duration = urlInfo.responseTime - urlInfo.requestTime
+    const duration = request.timing().responseEnd - request.timing().requestStart
 
     const statusCode = response?.status()
-    urlInfo.status = statusCode
-
     const linkTxt = colors.dim(response.url())
     const statusText = response?.statusText()
     const statusInfo = statusText ? `${statusCode?.toString()} ${statusText}` : statusCode?.toString()
     const durationTxt = colors.dim(`│${colors.blue(`${duration.toString().padStart(4, ' ')}${colors.white('ms')}`)} │`)
 
+    const info = `  [${statusInfo}] ${durationTxt} ${linkTxt}`
     if (response.status() >= 400) {
-      console.error(`Resource loading error: ${response.status()} ${response.statusText()} ${response.url()}`)
+      SEOD.logger.error(info)
     }
     else {
-      // consoleInnerInfo(colors.dim(successStart), colors.dim(colors.green(statusInfo)), durationTxt, linkTxt)
-      consola.debug(colors.dim(successStart), colors.dim(colors.green(statusInfo)), durationTxt, linkTxt)
-      // process.stdout.write(`${lineStart} ${colors.dim(successStart)} ${colors.dim(colors.green(statusInfo))} ${durationTxt} ${linkTxt}`)
-      // process.stdout.clearLine(0)
-      // 光标移动到开头，覆盖输出
-      // cursorTo(process.stdout, 0)
+      SEOD.logger.info(info)
     }
+    log(urlItem.type === 'link' ? info.trim() : info)
 
     curBar?.update(respondNum, {
       site: urlItem.url,
-      url: colors.dim(response.url()),
+      url: response.url(),
+    })
+  })
+
+  page.on('requestfailed', (request) => {
+    urlMap.set(request.url(), {
+      request,
     })
   })
 

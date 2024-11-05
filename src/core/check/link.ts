@@ -1,10 +1,11 @@
-import type { SEODConfig, SEODUrlProps } from '../../types'
+import type { SEODUrlProps } from '../../types'
 import { lineStart } from 'cilicili'
 import consola from 'consola'
 import { colors } from 'consola/utils'
-import { getBrowser } from '../env'
+import { getBrowser, SEOD } from '../env'
 import { progressBarMap } from '../progress'
-import { registerPageEvents } from '../utils'
+import { getSEODUrlItemInfo, registerPageEvents } from '../utils'
+import { parseUrlMap } from '../utils/parse'
 import { checkUrlNomoduleAssets } from './site'
 
 /**
@@ -26,45 +27,33 @@ export async function checkLink(urlItem: SEODUrlProps) {
   }).catch((e) => {
     consola.error(e)
   })
+
   const isHtml = res?.headers()['content-type'].includes('text/html')
   if (isHtml) {
-    const successCount = Array.from(urlMap.values()).filter(value => value.status && value.status < 400).length
-    const errorCount = urlMap.size - successCount
-    const timeoutCount = Array.from(urlMap.values()).filter(value => !value.responseTime).length
+    const { success, error, total } = parseUrlMap(urlMap)
 
     const duration = (Date.now() - startTime) / 1000
-    const timeoutTxt = timeoutCount ? colors.redBright(colors.redBright(`(🚫 ${timeoutCount} Timeout)`)) : ''
-    consola.debug(
-      `🔍 ${urlMap.size} Total ${colors.dim(`(in ${duration}s)`)}.`,
-      `✅ ${colors.green(`${successCount} OK`)}`,
-      `❌ ${colors.red(`${errorCount} Errors`)} ${timeoutTxt}`,
+    const statusCode = res?.status() || 0
+    const statusText = res?.statusText()
+
+    SEOD.logger.log(
+      lineStart,
+      '  ',
+      colors.green(`[${statusCode}${statusText ? ` ${statusText}` : ''}]`),
+      colors.cyan(url),
+      total.text,
+      colors.dim(`(in ${duration}s)`),
+      success.text,
+      error.text,
     )
 
     bar?.setTotal(urlMap.size)
-    bar?.update(successCount)
+    bar?.update(success.count)
   }
   else {
     bar?.update(1)
   }
 
-  for (const [url, info] of urlMap) {
-    if (!info.responseTime) {
-      // retry
-      try {
-        const res = await page.goto(url, {
-          waitUntil: 'networkidle',
-        })
-        const status = res?.status() || 0
-        if (status >= 400) {
-          console.error(lineStart, `Resource loading error: ${colors.underline(url)}`)
-        }
-      }
-      catch (e) {
-        consola.error(e)
-        console.error(lineStart, `Resource loading timeout: ${colors.underline(url)}`)
-      }
-    }
-  }
   await checkUrlNomoduleAssets(page)
   await page.close()
   await context.close()
