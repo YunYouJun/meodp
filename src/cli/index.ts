@@ -6,7 +6,8 @@ import consola from 'consola'
 import { colors } from 'consola/utils'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
-import { defaultSEODConfig, runByConfig, SEOD } from '../core'
+import { defaultSEODConfig, runByConfig } from '../core'
+import { SEOD } from '../core/global'
 import { commonOptions } from './options'
 
 // export const __DEV__ = process.env.NODE_ENV === 'development'
@@ -38,7 +39,7 @@ export const cli = yargs(hideBin(process.argv))
       await SEOD.init(config)
 
       debug('config', config)
-      SEOD.logger.info(`🛠️ Config File: ${configFile}`)
+      SEOD.logger.info(`🛠️  Config File: ${configFile}`)
 
       SEOD.config = config
       SEOD.configFile = configFile || ''

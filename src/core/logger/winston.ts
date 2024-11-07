@@ -1,10 +1,11 @@
 import path from 'node:path'
+import { colors } from 'consola/utils'
+
 import winston from 'winston'
 
 // for jiti import https://github.com/winstonjs/winston/issues/2430
 import transports from 'winston/lib/winston/transports'
-
-import { SEOD } from '../env'
+import { SEOD } from '../global'
 
 // dev
 
@@ -14,6 +15,13 @@ export const levelIcons = {
   info: 'ℹ',
   warn: '⚠',
   error: '✖',
+}
+
+export const LEVEL_COLORFUL_ICONS = {
+  success: colors.green('✔'),
+  info: colors.blue('ℹ'),
+  warn: colors.yellow('⚠'),
+  error: colors.red('✖'),
 }
 
 /**

@@ -3,7 +3,7 @@ import type { PageUrlEvent, SEODUrlProps } from '../../types'
 
 import consola from 'consola'
 import { colors } from 'consola/utils'
-import { SEOD } from '../env'
+import { SEOD } from '../global'
 import { LocalLog } from '../logger'
 
 import { progressBarMap } from '../progress'
@@ -16,7 +16,7 @@ import { progressBarMap } from '../progress'
  * - images
  * 检测所有匹配资源，包括没有被加载的 legacy 资源
  */
-export async function checkPageAssets(page: Page) {
+export async function checkPageAssets(_page: Page) {
   // const cssAndJsLinks = await page.$$eval('link[rel=stylesheet], script', (elements) => {
   //   return elements
   //     .map(element => element.getAttribute('src') || element.getAttribute('href'))
@@ -67,8 +67,6 @@ export async function checkPageAssets(page: Page) {
   // await Promise.all(loadPromisesArr)
 
   consola.success(colors.green('All assets checked.'))
-
-  await page.goto
 }
 
 // request
@@ -97,8 +95,14 @@ export function registerPageEvents(page: Page, urlItem: SEODUrlProps) {
     }
 
     const requestUrl = request.url()
-    if (SEOD.isIgnoredLink(requestUrl))
+    if (SEOD.isIgnoredLink(requestUrl)) {
+      urlMap.set(requestUrl, {
+        ignored: true,
+        request,
+      })
+
       return
+    }
 
     if (requestUrl && !urlMap.has(requestUrl)) {
       urlMap.set(requestUrl, {
@@ -112,6 +116,12 @@ export function registerPageEvents(page: Page, urlItem: SEODUrlProps) {
   // 监听所有的网络响应
   page.on('response', (response) => {
     const request = response.request()
+    const item = urlMap.get(response.url())
+
+    if (!item || item.ignored) {
+      return
+    }
+
     urlMap.set(response.url(), {
       request,
       response,
@@ -149,9 +159,14 @@ export function registerPageEvents(page: Page, urlItem: SEODUrlProps) {
   })
 
   page.on('requestfailed', (request) => {
-    urlMap.set(request.url(), {
-      request,
-    })
+    const url = request.url()
+    const urlInfo = urlMap.get(url)
+    if (!urlInfo?.ignored) {
+      urlMap.set(url, {
+        request,
+        failed: true,
+      })
+    }
   })
 
   return urlMap

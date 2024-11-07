@@ -1,6 +1,6 @@
 import type { SEODUrlItem } from '../../types'
 import { colors } from 'consola/utils'
-import { SEOD } from '../env'
+import { SEOD } from '../global'
 import { progressBarMap } from '../progress'
 import { getSEODUrlItemInfo } from '../utils'
 import { checkLink } from './link'

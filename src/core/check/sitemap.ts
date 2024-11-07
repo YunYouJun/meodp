@@ -1,6 +1,6 @@
 import type { SEODUrlProps } from '../../types'
 import { siteUrlMap } from '../cache'
-import { getBrowser } from '../env'
+import { getBrowser } from '../global/env'
 
 /**
  * 检查站点地图

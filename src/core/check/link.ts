@@ -1,10 +1,9 @@
 import type { SEODUrlProps } from '../../types'
 import { lineStart } from 'cilicili'
-import consola from 'consola'
 import { colors } from 'consola/utils'
-import { getBrowser, SEOD } from '../env'
+import { getBrowser, SEOD } from '../global'
 import { progressBarMap } from '../progress'
-import { getSEODUrlItemInfo, registerPageEvents } from '../utils'
+import { registerPageEvents } from '../utils'
 import { parseUrlMap } from '../utils/parse'
 import { checkUrlNomoduleAssets } from './site'
 
@@ -24,19 +23,16 @@ export async function checkLink(urlItem: SEODUrlProps) {
   const urlMap = registerPageEvents(page, urlItem)
   const res = await page.goto(url, {
     waitUntil: 'networkidle',
-  }).catch((e) => {
-    consola.error(e)
   })
-
   const isHtml = res?.headers()['content-type'].includes('text/html')
   if (isHtml) {
-    const { success, error, total } = parseUrlMap(urlMap)
+    const { success, failed, total, ignored, timeout } = parseUrlMap(urlMap)
 
     const duration = (Date.now() - startTime) / 1000
     const statusCode = res?.status() || 0
     const statusText = res?.statusText()
 
-    SEOD.logger.log(
+    const logInfo = [
       lineStart,
       '  ',
       colors.green(`[${statusCode}${statusText ? ` ${statusText}` : ''}]`),
@@ -44,8 +40,11 @@ export async function checkLink(urlItem: SEODUrlProps) {
       total.text,
       colors.dim(`(in ${duration}s)`),
       success.text,
-      error.text,
-    )
+      failed.text,
+      timeout.text,
+      ignored.text,
+    ]
+    SEOD.logger.log(...logInfo)
 
     bar?.setTotal(urlMap.size)
     bar?.update(success.count)

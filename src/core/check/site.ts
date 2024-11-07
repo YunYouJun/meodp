@@ -5,10 +5,12 @@ import consola from 'consola'
 import { colors } from 'consola/utils'
 import PQueue from 'p-queue'
 import { PQueueMap, siteUrlMap } from '../cache'
-import { getBrowser, SEOD } from '../env'
+import { SEOD } from '../global'
+import { getBrowser } from '../global/env'
 import { LocalLog } from '../logger'
 import { progressBarMap } from '../progress'
 import { registerPageEvents } from '../utils/assets'
+import { isLink } from '../utils/link'
 import { parseUrlMap } from '../utils/parse'
 
 /**
@@ -17,7 +19,7 @@ import { parseUrlMap } from '../utils/parse'
 export async function getSiteLinks(page: Page, options: CheckSiteUrlOptions) {
   const links = await page.$$eval('a', (elements) => {
     return elements
-      .map(element => element.getAttribute('href'))
+      .map(element => element.getAttribute('href') as string)
       .filter(Boolean)
   })
 
@@ -27,26 +29,23 @@ export async function getSiteLinks(page: Page, options: CheckSiteUrlOptions) {
   const filterQuery = true
 
   const filterLinks = links.map((link) => {
-    if (!link) {
+    if (!isLink(link)) {
       return false
     }
 
-    const isExternalLink = link.startsWith('http') && !link.startsWith(options.urlItem.url)
+    const isExternalLink = SEOD.isExternalLink(link, options.urlItem)
     if (!isExternalLink) {
-      if (link.startsWith('/')) {
-        if (filterQuery) {
-          // remove query (env: node) searchParams
-          const url = new URL(link, page.url())
-          url.search = ''
-          return url.toString()
-        }
-        return link
+      if (filterQuery) {
+        // remove query (env: node) searchParams
+        const url = new URL(link, page.url())
+        url.search = ''
+        return url.toString()
       }
+      return link
     }
     else {
       return link
     }
-    return false
   }).filter(Boolean)
   return filterLinks as string[]
 }
@@ -58,8 +57,8 @@ export async function getSiteLinks(page: Page, options: CheckSiteUrlOptions) {
 export async function checkUrlNomoduleAssets(page: Page) {
   const legacyScripts = await page.$$eval('script', (elements) => {
     return elements
-      .map(element => element.getAttribute('nomodule'))
-      .filter(Boolean)
+      .filter(element => element.getAttribute('nomodule') && element.getAttribute('src'))
+      .map(el => el.getAttribute('src'))
   }).catch((e) => {
     consola.error(e)
   }) || []
@@ -95,7 +94,7 @@ export async function checkUrlNomoduleAssets(page: Page) {
         consoleInnerInfo(colors.dim(errorStart), colors.dim(colors.red(statusInfo)), durationTxt, linkTxt)
       }
       else {
-        consoleInnerInfo(colors.dim(successStart), colors.dim(colors.green(statusInfo)), durationTxt, linkTxt)
+        consoleInnerInfo(' ', colors.dim(successStart), colors.dim(colors.green(statusInfo)), durationTxt, linkTxt)
       }
       await newPage.close()
 
@@ -125,59 +124,76 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
   const bar = progressBarMap.get(options.urlItem.url)
   const startTime = Date.now()
 
-  const isExternalLink = url.startsWith('http') && !url.startsWith(options.urlItem.url)
-
+  const isExternalLink = SEOD.isExternalLink(url, options.urlItem)
   const log = LocalLog.createLog(options.urlItem)
 
-  const urlMap = registerPageEvents(page, options.urlItem)
-  const res = await page.goto(url, {
-    waitUntil: 'networkidle',
-  }).catch((e) => {
-    consola.error(e)
-  })
-  const statusCode = res?.status() || 0
-  siteUrlMap.set(url, {
-    statusCode,
-    checkStatus: 'goto',
-  })
-
-  const { success, error, total } = parseUrlMap(urlMap)
-
-  const duration = (Date.now() - startTime) / 1000
-  const statusText = res?.statusText()
-  SEOD.logger.log(
-    lineStart,
-    '  ',
-    colors.green(`[${statusCode}${statusText ? ` ${statusText}` : ''}]`),
-    colors.cyan(url),
-    colors.dim(`(in ${duration}s)`),
-    total.text,
-    success.text,
-    error.text,
-  )
-  log(
-    `[${statusCode}${statusText ? ` ${statusText}` : ''}] ${url}`,
-    `🔍 ${urlMap.size} Total Requests (in ${duration}s).`,
-    success.text,
-    error.text,
-  )
-  log()
-
-  if (SEOD.config.log?.type === 'progress') {
-    bar?.update(success.count, {
-      value: colors.green(success.count),
-      error_count: error.count ? colors.red(error.count) : 0,
+  // 不检查外链资源 && 是外链
+  if (!SEOD.config.checkExternalLinks && isExternalLink) {
+    const res = await page.goto(url, {
+      waitUntil: 'load',
     })
+    const statusCode = res?.status() || 0
+    const checkStatus = statusCode < 400 ? 'passed' : 'failed'
+    siteUrlMap.set(url, {
+      response: res,
+      statusCode,
+      checkStatus,
+    })
+    SEOD.logger.log(lineStart, '  ', colors.green(`[${statusCode}]`), colors.cyan(url), colors.dim(`(in ${((Date.now() - startTime) / 1000).toFixed(2)}s)`))
+    return
   }
-  else {
-    // logger.info()
+
+  const urlMap = registerPageEvents(page, options.urlItem)
+  try {
+    const res = await page.goto(url, {
+      waitUntil: 'networkidle',
+    })
+    const statusCode = res?.status() || 0
+    siteUrlMap.set(url, {
+      response: res,
+      statusCode,
+      checkStatus: 'goto',
+    })
+
+    const { success, failed, total, ignored, timeout } = parseUrlMap(urlMap)
+
+    const duration = (Date.now() - startTime) / 1000
+    const statusText = res?.statusText()
+    const logInfo = [
+      lineStart,
+      '  ',
+      colors.green(`[${statusCode}${statusText ? ` ${statusText}` : ''}]`),
+      colors.cyan(url),
+      colors.dim(`(in ${duration}s)`),
+      total.text,
+      success.text,
+      failed.text,
+      timeout.text,
+      ignored.text,
+    ]
+    SEOD.logger.log(...logInfo)
+    log(...logInfo)
+    log()
+
+    if (SEOD.config.log?.type === 'progress') {
+      bar?.update(success.count, {
+        value: colors.green(success.count),
+        error_count: failed.count ? colors.red(failed.count) : 0,
+      })
+    }
+    else {
+      // logger.info()
+    }
+  }
+  catch (e) {
+    SEOD.logger.error(e)
   }
 
   // @TODO retry
 
   for (const [url, info] of urlMap) {
-    if (!info.response) {
-      SEOD.logger.error(lineStart, `Resource loading timeout: ${colors.underline(url)}`)
+    if (!info.response && !info.ignored) {
+      SEOD.logger.log(lineStart, '    ', errorStart, `Timeout: ${colors.underline(url)}`)
     }
   }
 
@@ -188,22 +204,19 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
 
   // 所有资源加载成功，设置为通过
   const urlMapValues = Array.from(urlMap.values())
-  if (urlMapValues.every(value => value.response?.status() && value.response?.status() < 400) && noModuleAssetsPassed) {
-    siteUrlMap.set(url, {
-      statusCode,
-      checkStatus: 'passed',
-    })
-    const successCount = Array.from(siteUrlMap.values()).filter(value => value.checkStatus === 'passed').length
-    bar?.update(successCount)
-  }
-  else {
-    siteUrlMap.set(url, {
-      statusCode,
-      checkStatus: 'failed',
-    })
+  const siteUrlItem = siteUrlMap.get(url)
+  if (siteUrlItem) {
+    if (urlMapValues.every(value => value.response?.status() && value.response?.status() < 400) && noModuleAssetsPassed) {
+      siteUrlItem.checkStatus = 'passed'
+      const successCount = Array.from(siteUrlMap.values()).filter(value => value.checkStatus === 'passed').length
+      bar?.update(successCount)
+    }
+    else {
+      siteUrlItem.checkStatus = 'failed'
+    }
   }
 
-  // check site, do not check link in external link
+  // 外链就不继续检查外链的页面链接了
   if (!isExternalLink) {
     const queue = PQueueMap.get(url)
     if (queue) {

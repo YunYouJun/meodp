@@ -3,13 +3,13 @@ import consola from 'consola'
 import PQueue from 'p-queue'
 
 import { checkSEODUrl } from './check'
-import { getBrowser } from './env'
+import { getBrowser } from './global/env'
 import { multiBar, progressBarMap } from './progress'
 import { getSEODUrlItemInfo } from './utils'
 
 export const defaultSEODConfig: SEODConfig = {
   urls: [],
-  concurrency: 5,
+  concurrency: 10,
   log: {
     type: 'raw',
     file: true,

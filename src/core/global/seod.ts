@@ -1,28 +1,12 @@
-import type { SEODConfig, SEODUrlProps } from '../types'
+import type { Browser } from 'playwright'
+import type { SEODConfig, SEODUrlProps } from '../../types'
 import path from 'node:path'
 import process from 'node:process'
+import { errorStart } from 'cilicili'
 import consola from 'consola'
-import { type Browser, chromium } from 'playwright'
 import stripAnsi from 'strip-ansi'
-import { createWinstonLogger, levelIcons, LocalLog } from './logger'
-
-/**
- * 获取浏览器实例
- * - 单例模式
- */
-export async function getBrowser() {
-  if (!SEOD.browser) {
-    SEOD.browser = await chromium.launch({
-      // 15s
-      timeout: 15000,
-    })
-  }
-  return SEOD.browser
-}
-
-export function formatArgs(args: any[]) {
-  return args.join(' ')
-}
+import { createWinstonLogger, levelIcons, LocalLog } from '../logger'
+import { formatArgs } from '../utils'
 
 export class SEOD {
   /**
@@ -106,7 +90,8 @@ export class SEOD {
       },
       error: (...args: any[]) => {
         const content = formatArgs(args)
-        consola.error(content)
+        // consola.error(content)
+        consola.log(errorStart, content)
         // SEOD.wLogger.error(content)
         SEOD.logger._log(levelIcons.error, content)
       },
@@ -117,12 +102,24 @@ export class SEOD {
    * filter link by ignoreLinks
    */
   public static isIgnoredLink(link: string) {
-    return SEOD.config.ignoreLinks?.some((ignoreLink) => {
+    const isIgnoredLinks = SEOD.config.ignoreLinks?.some((ignoreLink) => {
       if (ignoreLink instanceof RegExp) {
         return ignoreLink.test(link)
       }
-      return link.startsWith(ignoreLink)
+      else if (link.startsWith(ignoreLink)) {
+        return true
+      }
+      return false
     })
+    const isIgnoredExtensions = SEOD.config.ignoreExtensions?.some(ext => link.endsWith(ext))
+    return isIgnoredLinks || isIgnoredExtensions
+  }
+
+  /**
+   * @desc 是否为外链
+   */
+  public static isExternalLink(url: string, urlItem: SEODUrlProps) {
+    return url.startsWith('http') && !url.startsWith(urlItem.url)
   }
 
   /**

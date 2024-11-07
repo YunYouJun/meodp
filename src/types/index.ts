@@ -82,7 +82,7 @@ export interface SEODConfig {
    */
   checkAssets?: boolean
   /**
-   * @desc 是否检查外链
+   * @desc 是否检查外链中的资源
    * @default true
    */
   checkExternalLinks?: boolean
@@ -94,6 +94,11 @@ export interface SEODConfig {
    * 被正则匹配成功或以字符串开头的链接将被忽略
    */
   ignoreLinks?: (string | RegExp)[]
+  /**
+   * 忽略的后缀名
+   * @example ignoreExtensions: ['.mp3', '.mp4']
+   */
+  ignoreExtensions?: string[]
 
   /**
    * @todo
@@ -126,7 +131,7 @@ export interface SEODConfig {
   /**
    * @todo
    * 最大并发数
-   * @default 5
+   * @default 10
    */
   concurrency?: number
 }

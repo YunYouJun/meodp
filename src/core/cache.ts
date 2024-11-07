@@ -1,10 +1,12 @@
 import type PQueue from 'p-queue'
+import type { Response } from 'playwright'
 
 // global cache
 /**
  * 只检查内部链接
  */
 export const siteUrlMap = new Map<string, {
+  response?: Response | null
   /**
    * 状态码
    */
