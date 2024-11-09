@@ -64,8 +64,8 @@ importers:
         specifier: ^0.64.0
         version: 0.64.0(eslint@9.14.0(jiti@2.3.3))(typescript@5.6.3)
       cilicili:
-        specifier: ^0.0.4
-        version: 0.0.4
+        specifier: ^0.1.1
+        version: 0.1.1
       eslint:
         specifier: ^9.14.0
         version: 9.14.0(jiti@2.3.3)
@@ -1362,8 +1362,8 @@ packages:
     resolution: {integrity: sha512-TdHqgGf9odd8SXNuxtUBVx8Nv+qZOejE6qyqiy5NtbYYQOeFa6zmHkxlPzmaLxWWHsU6nJmB7AETdVPi+2NBUg==}
     engines: {node: '>=8'}
 
-  cilicili@0.0.4:
-    resolution: {integrity: sha512-yKSnJTH9FXMIwYEhKFA6Aq2X28mHYxqbf5dFXtNOnkiZbvVSHA4QE2ChX9C7um2/R8LldPoSBNFgl21PGUt3FQ==}
+  cilicili@0.1.1:
+    resolution: {integrity: sha512-T3pcxu7RD5739kp/+1vPxGRpaWhjLQBfPnGwFaVPK/qEarSnbujNN/8gPGU1wd8YSKrLSI58taRP6ub+WWpfOg==}
 
   citty@0.1.6:
     resolution: {integrity: sha512-tskPPKEs8D2KPafUypv2gxwJP8h/OaJmC82QQGGDQcHvXX43xF2VDACcJVmZ0EuSxkpO9Kc4MlrA3q0+FG58AQ==}
@@ -4201,7 +4201,7 @@ snapshots:
 
   ci-info@4.0.0: {}
 
-  cilicili@0.0.4:
+  cilicili@0.1.1:
     dependencies:
       consola: 3.2.3
 

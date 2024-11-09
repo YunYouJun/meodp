@@ -1,5 +1,5 @@
 import type { SEODUrlProps } from '../../types'
-import { lineStart } from 'cilicili'
+import { COLORFUL_SYMBOLS } from 'cilicili'
 import { colors } from 'consola/utils'
 import { getBrowser, SEOD } from '../global'
 import { progressBarMap } from '../progress'
@@ -33,7 +33,7 @@ export async function checkLink(urlItem: SEODUrlProps) {
     const statusText = res?.statusText()
 
     const logInfo = [
-      lineStart,
+      COLORFUL_SYMBOLS.line,
       '  ',
       colors.green(`[${statusCode}${statusText ? ` ${statusText}` : ''}]`),
       colors.cyan(url),

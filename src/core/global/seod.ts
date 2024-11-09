@@ -2,10 +2,8 @@ import type { Browser } from 'playwright'
 import type { SEODConfig, SEODUrlProps } from '../../types'
 import path from 'node:path'
 import process from 'node:process'
-import { errorStart } from 'cilicili'
 import consola from 'consola'
-import stripAnsi from 'strip-ansi'
-import { createWinstonLogger, levelIcons, LocalLog } from '../logger'
+import { createSEODLogger, createWinstonLogger, LocalLog } from '../logger'
 import { formatArgs } from '../utils'
 
 export class SEOD {
@@ -23,15 +21,7 @@ export class SEOD {
    * logs/seod/
    */
   public static logFolder: string
-  public static logger: {
-    _log: (...args: any[]) => void
-    start: (...args: any[]) => void
-    success: (...args: any[]) => void
-    info: (...args: any[]) => void
-    warn: (...args: any[]) => void
-    error: (...args: any[]) => void
-    log: (...args: any[]) => void
-  }
+  public static logger = createSEODLogger()
 
   public static wLogger: ReturnType<typeof createWinstonLogger>
 
@@ -52,50 +42,6 @@ export class SEOD {
     await LocalLog.init()
     SEOD.logFolder = LocalLog.logFolder || path.resolve(process.cwd(), 'logs/seod')
     SEOD.wLogger = createWinstonLogger()
-
-    SEOD.logger = {
-      _log: (...args: any[]) => {
-        const allLogPath = path.resolve(SEOD.logFolder, 'all.log')
-        // 移除 ansi color
-        LocalLog.log(allLogPath, stripAnsi(args.join(' ')))
-      },
-      log: (...args: any[]) => {
-        const content = formatArgs(args)
-        consola.log(content)
-        SEOD.logger._log(content)
-      },
-      start: (...args: any[]) => {
-        const content = formatArgs(args)
-        consola.start(content)
-        // SEOD.wLogger.info(levelIcons.start, content)
-        SEOD.logger._log(levelIcons.start, content)
-      },
-      success: (...args: any[]) => {
-        const content = formatArgs(args)
-        consola.success(content)
-        // SEOD.wLogger.info(levelIcons.success, content)
-        SEOD.logger._log(levelIcons.success, content)
-      },
-      info: (...args: any[]) => {
-        const content = formatArgs(args)
-        consola.info(content)
-        // SEOD.wLogger.info(content)
-        SEOD.logger._log(levelIcons.info, content)
-      },
-      warn: (...args: any[]) => {
-        const content = formatArgs(args)
-        consola.warn(content)
-        // SEOD.wLogger.warn(content)
-        SEOD.logger._log(levelIcons.warn, content)
-      },
-      error: (...args: any[]) => {
-        const content = formatArgs(args)
-        // consola.error(content)
-        consola.log(errorStart, content)
-        // SEOD.wLogger.error(content)
-        SEOD.logger._log(levelIcons.error, content)
-      },
-    }
   }
 
   /**

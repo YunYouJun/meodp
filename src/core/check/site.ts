@@ -1,6 +1,6 @@
 import type { Page } from 'playwright'
 import type { SEODUrlProps } from '../../types'
-import { consoleInnerInfo, errorStart, lineStart, successStart } from 'cilicili'
+import { COLORFUL_SYMBOLS, consoleInnerInfo } from 'cilicili'
 import consola from 'consola'
 import { colors } from 'consola/utils'
 import PQueue from 'p-queue'
@@ -90,11 +90,11 @@ export async function checkUrlNomoduleAssets(page: Page) {
       // paddingSpace
       const durationTxt = colors.dim(`│${colors.blue(`${duration.toString().padStart(4, ' ')}${colors.white('ms')}`)} │`)
 
-      if (statusCode !== 200) {
-        consoleInnerInfo(colors.dim(errorStart), colors.dim(colors.red(statusInfo)), durationTxt, linkTxt)
+      if (statusCode >= 400) {
+        consoleInnerInfo(colors.dim(COLORFUL_SYMBOLS.error), colors.dim(colors.red(statusInfo)), durationTxt, linkTxt)
       }
       else {
-        consoleInnerInfo(' ', colors.dim(successStart), colors.dim(colors.green(statusInfo)), durationTxt, linkTxt)
+        consoleInnerInfo(' ', colors.dim(COLORFUL_SYMBOLS.success), colors.dim(colors.green(statusInfo)), durationTxt, linkTxt)
       }
       await newPage.close()
 
@@ -139,7 +139,7 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
       statusCode,
       checkStatus,
     })
-    SEOD.logger.log(lineStart, '  ', colors.green(`[${statusCode}]`), colors.cyan(url), colors.dim(`(in ${((Date.now() - startTime) / 1000).toFixed(2)}s)`))
+    SEOD.logger.log(COLORFUL_SYMBOLS.line, '  ', colors.green(`[${statusCode}]`), colors.cyan(url), colors.dim(`(in ${((Date.now() - startTime) / 1000).toFixed(2)}s)`))
     return
   }
 
@@ -160,7 +160,7 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
     const duration = (Date.now() - startTime) / 1000
     const statusText = res?.statusText()
     const logInfo = [
-      lineStart,
+      COLORFUL_SYMBOLS.line,
       '  ',
       colors.green(`[${statusCode}${statusText ? ` ${statusText}` : ''}]`),
       colors.cyan(url),
@@ -193,7 +193,7 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
 
   for (const [url, info] of urlMap) {
     if (!info.response && !info.ignored) {
-      SEOD.logger.log(lineStart, '    ', errorStart, `Timeout: ${colors.underline(url)}`)
+      SEOD.logger.log(COLORFUL_SYMBOLS.line, '    ', COLORFUL_SYMBOLS.error, `Timeout: ${colors.underline(url)}`)
     }
   }
 

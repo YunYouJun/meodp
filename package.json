@@ -59,7 +59,7 @@
     "@types/node": "^22.9.0",
     "@types/yargs": "^17.0.33",
     "@unocss/eslint-plugin": "^0.64.0",
-    "cilicili": "^0.0.4",
+    "cilicili": "^0.1.1",
     "eslint": "^9.14.0",
     "eslint-plugin-format": "^0.1.2",
     "playwright": "^1.48.2",
