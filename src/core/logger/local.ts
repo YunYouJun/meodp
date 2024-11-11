@@ -1,4 +1,4 @@
-import type { SEODUrlItem, SEODUrlProps } from '../../types'
+import type { MEODPUrlItem, MEODPUrlProps } from '../../types'
 import path from 'node:path'
 import process from 'node:process'
 import consola from 'consola'
@@ -7,7 +7,7 @@ import { formatDate } from 'date-fns'
 import fs from 'fs-extra'
 import stripAnsi from 'strip-ansi'
 
-export function logUrlItemInfo(urlItem: SEODUrlItem) {
+export function logUrlItemInfo(urlItem: MEODPUrlItem) {
   consola.info('urlItem', urlItem)
 }
 
@@ -57,7 +57,7 @@ export class LocalLog {
    */
   static async init(options?: LocalLogOptions) {
     const cwd = options?.cwd || process.cwd()
-    LocalLog.rootLogFolder = path.resolve(cwd, 'logs/seod')
+    LocalLog.rootLogFolder = path.resolve(cwd, 'logs/meodp')
     fs.ensureDirSync(this.rootLogFolder)
 
     if (LocalLog.nameRule === 'timestamp') {
@@ -92,7 +92,7 @@ export class LocalLog {
   /**
    * @desc append log
    */
-  static async SiteLog(urlItem: SEODUrlProps, ...args: any[]) {
+  static async SiteLog(urlItem: MEODPUrlProps, ...args: any[]) {
     const logName = (urlItem.name || urlItem.url)
       .replace('https://', '')
       .replace('http://', '')
@@ -108,7 +108,7 @@ export class LocalLog {
     await LocalLog.log(this.linkLogFile, ...args)
   }
 
-  static async logByType(urlItem: SEODUrlProps, ...args: any[]) {
+  static async logByType(urlItem: MEODPUrlProps, ...args: any[]) {
     switch (urlItem.type) {
       case 'site':
         this.SiteLog(urlItem, ...args)
@@ -124,7 +124,7 @@ export class LocalLog {
   /**
    * @desc create log
    */
-  static createLog(urlItem: SEODUrlProps) {
+  static createLog(urlItem: MEODPUrlProps) {
     return (...args: any[]) => {
       LocalLog.logByType(urlItem, ...args)
     }

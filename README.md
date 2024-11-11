@@ -1,4 +1,4 @@
-# SEOD (straight-eye-of-death)
+# MEODP (Mystic Eyes of Death Perception)
 
 Written by Typescript, based on [Playwright](https://playwright.dev/).
 
@@ -9,8 +9,8 @@ You can use it like a lib or a cli.
 Or like an application:
 
 ```ts
-// Create a config file: `seod.config.ts` in your project root.
-import { defineConfig } from 'seod'
+// Create a config file: `meodp.config.ts` in your project root.
+import { defineConfig } from 'meodp'
 
 export default defineConfig({
 
@@ -24,7 +24,7 @@ export default defineConfig({
 ## Logs
 
 ```bash
-logs/seod
+logs/meodp
 ```
 
 ## FAQ

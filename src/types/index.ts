@@ -5,9 +5,9 @@ export * from './event'
  * - url: 单个页面链接
  * - sitemap: sitemap.xml 链接，将会检查对应的 sitemap 中的链接
  */
-export type SEODUrlType = 'site' | 'link' | 'sitemap'
+export type MEODPUrlType = 'site' | 'link' | 'sitemap'
 
-export interface SEODUrlProps {
+export interface MEODPUrlProps {
   /**
    * @desc emoji
    */
@@ -22,7 +22,7 @@ export interface SEODUrlProps {
    * - sitemap: sitemap.xml 链接，将会检查对应的 sitemap 中的链接
    * @default 'url'
    */
-  type: SEODUrlType
+  type: MEODPUrlType
   /**
    * url 为 html 时，将会检查页面上的所有资源
    */
@@ -39,9 +39,9 @@ export interface SEODUrlProps {
   }
 }
 
-export type SEODUrlItem = string | SEODUrlProps
+export type MEODPUrlItem = string | MEODPUrlProps
 
-export interface SEODConfig {
+export interface MEODPConfig {
   /**
    * @desc 是否清理缓存日志
    * @default false
@@ -56,7 +56,7 @@ export interface SEODConfig {
    * urls
    * 可以是多种类型 @ref SiteUrlConfig
    */
-  urls: SEODUrlItem[]
+  urls: MEODPUrlItem[]
 
   /**
    * 日志形式

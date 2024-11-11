@@ -1,11 +1,11 @@
 {
   "name": "app",
   "scripts": {
-    "dev": "tsx node_modules/seod/bin/index.ts",
-    "dev:bin": "seod-ts",
-    "start": "seod"
+    "dev": "tsx node_modules/meodp/bin/index.ts",
+    "dev:bin": "meodp-ts",
+    "start": "meodp"
   },
   "devDependencies": {
-    "seod": "workspace:*"
+    "meodp": "workspace:*"
   }
 }

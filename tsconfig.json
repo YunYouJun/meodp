@@ -9,7 +9,7 @@
     "moduleResolution": "Bundler",
 
     "paths": {
-      "seod": ["./src/index.ts"]
+      "meodp": ["./src/index.ts"]
     },
 
     "resolveJsonModule": true,

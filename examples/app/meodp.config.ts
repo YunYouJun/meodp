@@ -1,4 +1,4 @@
-import { defineConfig } from 'seod'
+import { defineConfig } from 'meodp'
 
 export default defineConfig({
   clean: true,

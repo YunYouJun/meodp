@@ -1,4 +1,4 @@
-import type { SEODConfig } from '../types'
+import type { MEODPConfig } from '../types'
 import process from 'node:process'
 import { loadConfig } from 'c12'
 
@@ -6,8 +6,8 @@ import consola from 'consola'
 import { colors } from 'consola/utils'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
-import { defaultSEODConfig, runByConfig } from '../core'
-import { SEOD } from '../core/global'
+import { defaultMEODPConfig, runByConfig } from '../core'
+import { MEODP } from '../core/global'
 import { commonOptions } from './options'
 
 // export const __DEV__ = process.env.NODE_ENV === 'development'
@@ -22,29 +22,29 @@ export function debug(name: string, ...args: any[]) {
 }
 
 export const cli = yargs(hideBin(process.argv))
-  .scriptName('seod')
+  .scriptName('meodp')
   .usage('$0 检测链接')
   .command(
     '* [root]',
-    'Run SEOD to check links',
+    'Run MEODP to check links',
     args => commonOptions(args),
     async (argv) => {
       debug('argv', argv)
       const { root = process.cwd() } = argv
-      const { config, configFile } = await loadConfig<SEODConfig>({
+      const { config, configFile } = await loadConfig<MEODPConfig>({
         cwd: root,
-        name: 'seod',
-        defaultConfig: defaultSEODConfig,
+        name: 'meodp',
+        defaultConfig: defaultMEODPConfig,
       })
-      await SEOD.init(config)
+      await MEODP.init(config)
 
       debug('config', config)
-      SEOD.logger.info(`🛠️  Config File: ${configFile}`)
+      MEODP.logger.info(`🛠️  Config File: ${configFile}`)
 
-      SEOD.config = config
-      SEOD.configFile = configFile || ''
+      MEODP.config = config
+      MEODP.configFile = configFile || ''
 
-      SEOD.logger.start('🌐 Start checking links...')
+      MEODP.logger.start('🌐 Start checking links...')
 
       const startTime = Date.now()
       await runByConfig(config)
@@ -52,7 +52,7 @@ export const cli = yargs(hideBin(process.argv))
       const duration = endTime - startTime
 
       console.log()
-      SEOD.logger.success(`All done! in ${colors.yellow(duration / 1000)}s.`)
+      MEODP.logger.success(`All done! in ${colors.yellow(duration / 1000)}s.`)
 
       // caused by multiBar?
       process.exit(0)

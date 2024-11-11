@@ -1,35 +1,18 @@
 import path from 'node:path'
-import { colors } from 'consola/utils'
-
 import winston from 'winston'
 
 // for jiti import https://github.com/winstonjs/winston/issues/2430
 import transports from 'winston/lib/winston/transports'
-import { SEOD } from '../global'
+import { MEODP } from '../global'
 
 // dev
-
-export const levelIcons = {
-  start: '◐',
-  success: '✔',
-  info: 'ℹ',
-  warn: '⚠',
-  error: '✖',
-}
-
-export const LEVEL_COLORFUL_ICONS = {
-  success: colors.green('✔'),
-  info: colors.blue('ℹ'),
-  warn: colors.yellow('⚠'),
-  error: colors.red('✖'),
-}
 
 /**
  * - winston
  */
 export function createWinstonLogger() {
-  const allLogPath = path.resolve(SEOD.logFolder, 'all.log')
-  const errorLogPath = path.resolve(SEOD.logFolder, 'error.log')
+  const allLogPath = path.resolve(MEODP.logFolder, 'all.log')
+  const errorLogPath = path.resolve(MEODP.logFolder, 'error.log')
 
   const customFormats: winston.Logform.Format[] = [
     winston.format.timestamp({
@@ -42,7 +25,7 @@ export function createWinstonLogger() {
     // winston.format.uncolorize(),
   ]
 
-  // if (!SEOD.config.log?.file) {
+  // if (!MEODP.config.log?.file) {
   //   customFormats.push(
   //     winston.format.colorize(),
   //   )
@@ -71,16 +54,16 @@ export function createWinstonLogger() {
     }),
   ]
 
-  if (SEOD.config.log?.type === 'raw') {
-    customTransports.unshift(
-      new winston.transports.Console({}),
-    )
-  }
+  // if (MEODP.config.log?.type === 'raw') {
+  //   customTransports.unshift(
+  //     new winston.transports.Console({}),
+  //   )
+  // }
 
   return winston.createLogger({
     level: 'info',
     format: winston.format.combine(...customFormats),
-    defaultMeta: { service: 'SEOD' },
+    defaultMeta: { service: 'MEODP' },
     transports: customTransports,
     exitOnError: false,
   })

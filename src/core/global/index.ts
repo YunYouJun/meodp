@@ -1,2 +1,2 @@
 export * from './env'
-export * from './seod'
+export * from './meodp'

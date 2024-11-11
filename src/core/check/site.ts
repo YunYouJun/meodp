@@ -1,14 +1,15 @@
-import type { Page } from 'playwright'
-import type { SEODUrlProps } from '../../types'
-import { COLORFUL_SYMBOLS, consoleInnerInfo } from 'cilicili'
+import type { Page, Response } from 'playwright'
+import type { MEODPUrlProps } from '../../types'
+import { COLORFUL_SYMBOLS } from 'cilicili'
 import consola from 'consola'
 import { colors } from 'consola/utils'
 import PQueue from 'p-queue'
 import { PQueueMap, siteUrlMap } from '../cache'
-import { SEOD } from '../global'
+import { MEODP } from '../global'
 import { getBrowser } from '../global/env'
 import { LocalLog } from '../logger'
 import { progressBarMap } from '../progress'
+import { getFormattedDataFromResponse } from '../utils'
 import { registerPageEvents } from '../utils/assets'
 import { isLink } from '../utils/link'
 import { parseUrlMap } from '../utils/parse'
@@ -33,7 +34,7 @@ export async function getSiteLinks(page: Page, options: CheckSiteUrlOptions) {
       return false
     }
 
-    const isExternalLink = SEOD.isExternalLink(link, options.urlItem)
+    const isExternalLink = MEODP.isExternalLink(link, options.urlItem)
     if (!isExternalLink) {
       if (filterQuery) {
         // remove query (env: node) searchParams
@@ -76,25 +77,28 @@ export async function checkUrlNomoduleAssets(page: Page) {
         return
       }
 
-      const link = nomoduleUrl
       const startTime = Date.now()
       const newPage = await context.newPage()
-      const response = await newPage.goto(link)
+      const response = await newPage.goto(nomoduleUrl)
 
-      const statusCode = response?.status() || 0
-      const linkTxt = colors.dim(link)
-      const statusText = response?.statusText()
-      const statusInfo = statusText ? `${statusCode?.toString()} ${statusText}` : statusCode?.toString()
+      if (!response) {
+        return
+      }
+      const {
+        statusCode,
+        statusInfo,
+        linkText,
+      } = getFormattedDataFromResponse(response)
 
       const duration = Date.now() - startTime
       // paddingSpace
       const durationTxt = colors.dim(`│${colors.blue(`${duration.toString().padStart(4, ' ')}${colors.white('ms')}`)} │`)
 
       if (statusCode >= 400) {
-        consoleInnerInfo(colors.dim(COLORFUL_SYMBOLS.error), colors.dim(colors.red(statusInfo)), durationTxt, linkTxt)
+        MEODP.logger.inner(' ', COLORFUL_SYMBOLS.error, colors.red(statusInfo), durationTxt, linkText)
       }
       else {
-        consoleInnerInfo(' ', colors.dim(COLORFUL_SYMBOLS.success), colors.dim(colors.green(statusInfo)), durationTxt, linkTxt)
+        MEODP.logger.inner(' ', COLORFUL_SYMBOLS.success, colors.green(statusInfo), durationTxt, linkText)
       }
       await newPage.close()
 
@@ -106,7 +110,7 @@ export async function checkUrlNomoduleAssets(page: Page) {
 }
 
 export interface CheckSiteUrlOptions {
-  urlItem: SEODUrlProps
+  urlItem: MEODPUrlProps
   /**
    * 检查 nomodule 资源
    */
@@ -124,14 +128,24 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
   const bar = progressBarMap.get(options.urlItem.url)
   const startTime = Date.now()
 
-  const isExternalLink = SEOD.isExternalLink(url, options.urlItem)
+  const isExternalLink = MEODP.isExternalLink(url, options.urlItem)
   const log = LocalLog.createLog(options.urlItem)
 
   // 不检查外链资源 && 是外链
-  if (!SEOD.config.checkExternalLinks && isExternalLink) {
-    const res = await page.goto(url, {
-      waitUntil: 'load',
-    })
+  if (!MEODP.config.checkExternalLinks && isExternalLink) {
+    let res: Response | null = null
+    try {
+      res = await page.goto(url, {
+        waitUntil: 'load',
+      })
+    }
+    catch (e) {
+      MEODP.logger.error(e)
+    }
+
+    if (!res)
+      return
+
     const statusCode = res?.status() || 0
     const checkStatus = statusCode < 400 ? 'passed' : 'failed'
     siteUrlMap.set(url, {
@@ -139,7 +153,7 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
       statusCode,
       checkStatus,
     })
-    SEOD.logger.log(COLORFUL_SYMBOLS.line, '  ', colors.green(`[${statusCode}]`), colors.cyan(url), colors.dim(`(in ${((Date.now() - startTime) / 1000).toFixed(2)}s)`))
+    MEODP.logger.log(COLORFUL_SYMBOLS.line, '  ', colors.green(`[${statusCode}]`), colors.cyan(url), colors.dim(`(in ${((Date.now() - startTime) / 1000).toFixed(2)}s)`))
     return
   }
 
@@ -171,11 +185,11 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
       timeout.text,
       ignored.text,
     ]
-    SEOD.logger.log(...logInfo)
+    MEODP.logger.log(...logInfo)
     log(...logInfo)
     log()
 
-    if (SEOD.config.log?.type === 'progress') {
+    if (MEODP.config.log?.type === 'progress') {
       bar?.update(success.count, {
         value: colors.green(success.count),
         error_count: failed.count ? colors.red(failed.count) : 0,
@@ -186,14 +200,14 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
     }
   }
   catch (e) {
-    SEOD.logger.error(e)
+    MEODP.logger.error(e)
   }
 
   // @TODO retry
 
   for (const [url, info] of urlMap) {
     if (!info.response && !info.ignored) {
-      SEOD.logger.log(COLORFUL_SYMBOLS.line, '    ', COLORFUL_SYMBOLS.error, `Timeout: ${colors.underline(url)}`)
+      MEODP.logger.log(COLORFUL_SYMBOLS.line, '    ', COLORFUL_SYMBOLS.error, `Timeout: ${colors.underline(url)}`)
     }
   }
 
@@ -245,12 +259,12 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
  * - 死链
  * - 所有内嵌资源
  */
-export async function checkSite(props: SEODUrlProps) {
+export async function checkSite(props: MEODPUrlProps) {
   const { url } = props
 
   // init queue
   const queue = new PQueue({
-    concurrency: SEOD.config.concurrency,
+    concurrency: MEODP.config.concurrency,
   })
   PQueueMap.set(url, queue)
   const bar = progressBarMap.get(url)

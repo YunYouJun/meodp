@@ -1,16 +1,15 @@
 import type { Browser } from 'playwright'
-import type { SEODConfig, SEODUrlProps } from '../../types'
+import type { MEODPConfig, MEODPUrlProps } from '../../types'
 import path from 'node:path'
 import process from 'node:process'
 import consola from 'consola'
-import { createSEODLogger, createWinstonLogger, LocalLog } from '../logger'
-import { formatArgs } from '../utils'
+import { createMEODPLogger, createWinstonLogger, LocalLog } from '../logger'
 
-export class SEOD {
+export class MEODP {
   /**
    * global config
    */
-  public static config: SEODConfig
+  public static config: MEODPConfig
   public static configFile: string
   /**
    * browser instance by playwright
@@ -18,19 +17,19 @@ export class SEOD {
   public static browser: Browser
   /**
    * log folder
-   * logs/seod/
+   * logs/meodp/
    */
   public static logFolder: string
-  public static logger = createSEODLogger()
+  public static logger = createMEODPLogger()
 
   public static wLogger: ReturnType<typeof createWinstonLogger>
 
-  constructor(config: SEODConfig) {
-    SEOD.config = config
+  constructor(config: MEODPConfig) {
+    MEODP.config = config
   }
 
-  public static async init(config: SEODConfig) {
-    SEOD.config = config
+  public static async init(config: MEODPConfig) {
+    MEODP.config = config
 
     if (config.clean) {
       console.log()
@@ -40,15 +39,15 @@ export class SEOD {
       console.log()
     }
     await LocalLog.init()
-    SEOD.logFolder = LocalLog.logFolder || path.resolve(process.cwd(), 'logs/seod')
-    SEOD.wLogger = createWinstonLogger()
+    MEODP.logFolder = LocalLog.logFolder || path.resolve(process.cwd(), 'logs/meodp')
+    MEODP.wLogger = createWinstonLogger()
   }
 
   /**
    * filter link by ignoreLinks
    */
   public static isIgnoredLink(link: string) {
-    const isIgnoredLinks = SEOD.config.ignoreLinks?.some((ignoreLink) => {
+    const isIgnoredLinks = MEODP.config.ignoreLinks?.some((ignoreLink) => {
       if (ignoreLink instanceof RegExp) {
         return ignoreLink.test(link)
       }
@@ -57,14 +56,14 @@ export class SEOD {
       }
       return false
     })
-    const isIgnoredExtensions = SEOD.config.ignoreExtensions?.some(ext => link.endsWith(ext))
+    const isIgnoredExtensions = MEODP.config.ignoreExtensions?.some(ext => link.endsWith(ext))
     return isIgnoredLinks || isIgnoredExtensions
   }
 
   /**
    * @desc 是否为外链
    */
-  public static isExternalLink(url: string, urlItem: SEODUrlProps) {
+  public static isExternalLink(url: string, urlItem: MEODPUrlProps) {
     return url.startsWith('http') && !url.startsWith(urlItem.url)
   }
 
@@ -73,8 +72,8 @@ export class SEOD {
    * - 本地日志
    * - winston 日志
    */
-  public static log(urlItem: SEODUrlProps, ...args: any[]) {
-    SEOD.logger.info(args)
+  public static log(urlItem: MEODPUrlProps, ...args: any[]) {
+    MEODP.logger.info(args)
     LocalLog.logByType(urlItem, args.join(' '))
   }
 }

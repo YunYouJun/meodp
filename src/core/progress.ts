@@ -30,7 +30,7 @@ const formatter: cliProgress.GenericFormatter = (options, params, payload) => {
     const bar = formatBar(params.progress, options)
     const { site } = payload
     const url = (payload.url || '')
-    return `${bar} ${value}/${total} | ${colors.yellow(site || 'SEOD Item')} | ${colors.cyan(url || 'URL')}`
+    return `${bar} ${value}/${total} | ${colors.yellow(site || 'MEODP Item')} | ${colors.cyan(url || 'URL')}`
   }
   else {
     const { error_count, emoji, url, type } = payload

@@ -1,13 +1,13 @@
-import type { SEODConfig } from '../types'
+import type { MEODPConfig } from '../types'
 import consola from 'consola'
 import PQueue from 'p-queue'
 
-import { checkSEODUrl } from './check'
+import { checkMEODPUrl } from './check'
 import { getBrowser } from './global/env'
 import { multiBar, progressBarMap } from './progress'
-import { getSEODUrlItemInfo } from './utils'
+import { getMEODPUrlItemInfo } from './utils'
 
-export const defaultSEODConfig: SEODConfig = {
+export const defaultMEODPConfig: MEODPConfig = {
   urls: [],
   concurrency: 10,
   log: {
@@ -16,14 +16,14 @@ export const defaultSEODConfig: SEODConfig = {
   },
 }
 
-export function defineConfig(config: SEODConfig): SEODConfig {
+export function defineConfig(config: MEODPConfig): MEODPConfig {
   return config
 }
 
 /**
  * 根据配置运行
  */
-export async function runByConfig(config: SEODConfig) {
+export async function runByConfig(config: MEODPConfig) {
   const { urls, debug } = config
   consola.level = debug ? 5 : 3
 
@@ -36,7 +36,7 @@ export async function runByConfig(config: SEODConfig) {
     for (const urlItem of urls) {
     // const name = `${emoji}(${colors.yellow(type)}) ${colors.cyan(url)}`
 
-      const { type, url, emoji } = getSEODUrlItemInfo(urlItem)
+      const { type, url, emoji } = getMEODPUrlItemInfo(urlItem)
       const bar = multiBar.create(1, 0, {
         emoji,
         url,
@@ -55,7 +55,7 @@ export async function runByConfig(config: SEODConfig) {
   const browser = await getBrowser()
   for (const urlItem of urls) {
     await queue.add(async () => {
-      await checkSEODUrl(urlItem)
+      await checkMEODPUrl(urlItem)
     })
   }
 

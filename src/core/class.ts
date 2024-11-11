@@ -1,10 +1,10 @@
-import type { SEODUrlItem, SEODUrlProps } from '../types'
+import type { MEODPUrlItem, MEODPUrlProps } from '../types'
 import { emojiMap } from './utils'
 
-export class SEODUrl {
-  urlItem: SEODUrlProps
+export class MEODPUrl {
+  urlItem: MEODPUrlProps
 
-  constructor(options: SEODUrlItem) {
+  constructor(options: MEODPUrlItem) {
     if (typeof options === 'string') {
       this.urlItem = {
         type: 'link',

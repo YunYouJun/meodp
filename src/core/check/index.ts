@@ -1,8 +1,8 @@
-import type { SEODUrlItem } from '../../types'
+import type { MEODPUrlItem } from '../../types'
 import { colors } from 'consola/utils'
-import { SEOD } from '../global'
+import { MEODP } from '../global'
 import { progressBarMap } from '../progress'
-import { getSEODUrlItemInfo } from '../utils'
+import { getMEODPUrlItemInfo } from '../utils'
 import { checkLink } from './link'
 import { checkSite } from './site'
 // import { checkSiteMap } from './sitemap'
@@ -12,33 +12,33 @@ export * from './site'
 export * from './sitemap'
 
 /**
- * @desc 检查 SEOD 链接
+ * @desc 检查 MEODP 链接
  */
-export async function checkSEODUrl(seodUrl: SEODUrlItem) {
-  if (typeof seodUrl === 'string') {
-    seodUrl = {
+export async function checkMEODPUrl(meodpUrl: MEODPUrlItem) {
+  if (typeof meodpUrl === 'string') {
+    meodpUrl = {
       type: 'link',
-      url: seodUrl,
+      url: meodpUrl,
     }
   }
 
-  const { type, url, emoji } = getSEODUrlItemInfo(seodUrl)
-  SEOD.logger.log()
-  SEOD.logger.start(`${emoji} ${colors.yellow(`[${type}]`)} ${colors.cyan(url)}`)
-  // seodUrl
+  const { type, url, emoji } = getMEODPUrlItemInfo(meodpUrl)
+  MEODP.logger.log()
+  MEODP.logger.start(`${emoji} ${colors.yellow(`[${type}]`)} ${colors.cyan(url)}`)
+  // meodpUrl
 
   const startTime = Date.now()
 
-  if (typeof seodUrl === 'object') {
-    switch (seodUrl.type) {
+  if (typeof meodpUrl === 'object') {
+    switch (meodpUrl.type) {
       case 'site':
-        await checkSite(seodUrl)
+        await checkSite(meodpUrl)
         break
       case 'link':
-        await checkLink(seodUrl)
+        await checkLink(meodpUrl)
         break
       case 'sitemap':
-        // await checkSiteMap(seodUrl)
+        // await checkSiteMap(meodpUrl)
         break
       default:
         break
@@ -47,8 +47,8 @@ export async function checkSEODUrl(seodUrl: SEODUrlItem) {
 
   const duration = Date.now() - startTime
 
-  const bar = progressBarMap.get(seodUrl.url)
+  const bar = progressBarMap.get(meodpUrl.url)
   bar?.stop()
 
-  SEOD.logger.success(`Done in ${duration / 1000}s.`)
+  MEODP.logger.success(`Done in ${duration / 1000}s.`)
 }

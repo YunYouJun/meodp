@@ -1,6 +1,6 @@
 import type { UrlMap } from '../../types'
+import { COLORFUL_SYMBOLS } from 'cilicili'
 import { colors } from 'consola/utils'
-import { LEVEL_COLORFUL_ICONS } from '../logger'
 
 export interface UrlCategoryInfo {
   count: number
@@ -26,7 +26,7 @@ export function parseUrlMap(urlMap: UrlMap) {
 
   const success: UrlCategoryInfo = {
     count: successCount,
-    text: `${LEVEL_COLORFUL_ICONS.success} ${colors.green(`${successCount} OK`)}`,
+    text: `${COLORFUL_SYMBOLS.success} ${colors.green(`${successCount} OK`)}`,
   }
 
   const timeout: UrlCategoryInfo = {
@@ -34,7 +34,7 @@ export function parseUrlMap(urlMap: UrlMap) {
     text: timeoutTxt,
   }
 
-  const failedTxt = `${LEVEL_COLORFUL_ICONS.error} ${failedCount} Failed`
+  const failedTxt = `${COLORFUL_SYMBOLS.error} ${failedCount} Failed`
   const failed: UrlCategoryInfo = {
     count: failedCount,
     text: `${failedCount ? colors.red(failedTxt) : colors.dim(failedTxt)}`,

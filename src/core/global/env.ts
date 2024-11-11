@@ -1,16 +1,16 @@
 import { chromium } from 'playwright'
-import { SEOD } from './seod'
+import { MEODP } from './meodp'
 
 /**
  * 获取浏览器实例
  * - 单例模式
  */
 export async function getBrowser() {
-  if (!SEOD.browser) {
-    SEOD.browser = await chromium.launch({
+  if (!MEODP.browser) {
+    MEODP.browser = await chromium.launch({
       // 15s
       timeout: 15000,
     })
   }
-  return SEOD.browser
+  return MEODP.browser
 }

@@ -1,11 +1,11 @@
-import type { SEODUrlProps } from '../../types'
+import type { MEODPUrlProps } from '../../types'
 import { siteUrlMap } from '../cache'
 import { getBrowser } from '../global/env'
 
 /**
  * 检查站点地图
  */
-export async function checkSiteMap(urlItem: SEODUrlProps) {
+export async function checkSiteMap(urlItem: MEODPUrlProps) {
   const { url } = urlItem
 
   const robotsUrl = new URL('/robots.txt', url).href

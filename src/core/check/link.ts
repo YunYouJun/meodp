@@ -1,7 +1,7 @@
-import type { SEODUrlProps } from '../../types'
+import type { MEODPUrlProps } from '../../types'
 import { COLORFUL_SYMBOLS } from 'cilicili'
 import { colors } from 'consola/utils'
-import { getBrowser, SEOD } from '../global'
+import { getBrowser, MEODP } from '../global'
 import { progressBarMap } from '../progress'
 import { registerPageEvents } from '../utils'
 import { parseUrlMap } from '../utils/parse'
@@ -10,7 +10,7 @@ import { checkUrlNomoduleAssets } from './site'
 /**
  * check one link
  */
-export async function checkLink(urlItem: SEODUrlProps) {
+export async function checkLink(urlItem: MEODPUrlProps) {
   const browser = await getBrowser()
   const context = await browser.newContext()
   const page = await context.newPage()
@@ -44,7 +44,7 @@ export async function checkLink(urlItem: SEODUrlProps) {
       timeout.text,
       ignored.text,
     ]
-    SEOD.logger.log(...logInfo)
+    MEODP.logger.log(...logInfo)
 
     bar?.setTotal(urlMap.size)
     bar?.update(success.count)
