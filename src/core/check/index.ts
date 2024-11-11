@@ -50,5 +50,5 @@ export async function checkMEODPUrl(meodpUrl: MEODPUrlItem) {
   const bar = progressBarMap.get(meodpUrl.url)
   bar?.stop()
 
-  MEODP.logger.success(`Done in ${duration / 1000}s.`)
+  MEODP.logger.success(`🕷️  ${colors.greenBright('[DONE]')} ${colors.gray('in')} ${duration / 1000}s.`)
 }

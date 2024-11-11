@@ -93,7 +93,11 @@ export class LocalLog {
    * @desc append log
    */
   static async SiteLog(urlItem: MEODPUrlProps, ...args: any[]) {
-    const logName = (urlItem.name || urlItem.url)
+    let id = (urlItem.name || urlItem.url)
+    if (id.endsWith('/')) {
+      id = id.slice(0, -1)
+    }
+    const logName = (id)
       .replace('https://', '')
       .replace('http://', '')
       .replace(/\//g, '-')

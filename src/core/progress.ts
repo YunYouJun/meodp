@@ -1,10 +1,13 @@
 import cliProgress from 'cli-progress'
 // @ts-expect-error options
-import Options from 'cli-progress/lib/options'
-// @ts-expect-error import formatbar
-import _defaultFormatBar from 'cli-progress/lib/format-bar'
-// @ts-expect-error import format time
-import _defaultFormatTime from 'cli-progress/lib/format-time'
+// eslint-disable-next-line import/no-named-default
+import { default as Options } from 'cli-progress/lib/options.js'
+// @ts-expect-error formatBar
+// eslint-disable-next-line import/no-named-default
+import { default as _defaultFormatBar } from 'cli-progress/lib/format-bar.js'
+// @ts-expect-error formatTime
+// eslint-disable-next-line import/no-named-default
+import { default as _defaultFormatTime } from 'cli-progress/lib/format-time.js'
 import consola from 'consola'
 import { colors } from 'consola/utils'
 

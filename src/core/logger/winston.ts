@@ -2,7 +2,7 @@ import path from 'node:path'
 import winston from 'winston'
 
 // for jiti import https://github.com/winstonjs/winston/issues/2430
-import transports from 'winston/lib/winston/transports'
+// import transports from 'winston/lib/winston/transports'
 import { MEODP } from '../global'
 
 // dev
@@ -44,11 +44,11 @@ export function createWinstonLogger() {
   )
 
   const customTransports: winston.transport | winston.transport[] = [
-    new transports.File({
+    new winston.transports.File({
       filename: errorLogPath,
       level: 'error',
     }),
-    new transports.File({
+    new winston.transports.File({
       filename: allLogPath,
       // level: 'info',
     }),

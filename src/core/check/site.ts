@@ -146,18 +146,30 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
     if (!res)
       return
 
-    const statusCode = res?.status() || 0
+    const {
+      statusCode,
+      statusInfoText,
+      durationText,
+    } = getFormattedDataFromResponse(res)
     const checkStatus = statusCode < 400 ? 'passed' : 'failed'
+
     siteUrlMap.set(url, {
       response: res,
       statusCode,
       checkStatus,
     })
-    MEODP.logger.log(COLORFUL_SYMBOLS.line, '  ', colors.green(`[${statusCode}]`), colors.cyan(url), colors.dim(`(in ${((Date.now() - startTime) / 1000).toFixed(2)}s)`))
+    MEODP.logger.inner(statusInfoText, colors.cyan(url), durationText)
+
+    if (statusCode >= 400) {
+      // log to error.log
+      MEODP.wLogger.error(`  ${statusInfoText} ${url} ${durationText}`)
+    }
+
     return
   }
 
   const urlMap = registerPageEvents(page, options.urlItem)
+  const { success, failed, total, ignored, timeout } = parseUrlMap(urlMap)
   try {
     const res = await page.goto(url, {
       waitUntil: 'networkidle',
@@ -168,8 +180,6 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
       statusCode,
       checkStatus: 'goto',
     })
-
-    const { success, failed, total, ignored, timeout } = parseUrlMap(urlMap)
 
     const duration = (Date.now() - startTime) / 1000
     const statusText = res?.statusText()
@@ -189,14 +199,16 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
     log(...logInfo)
     log()
 
+    // 存在错误时，输出到 error.log
+    if (failed.count > 0) {
+      MEODP.wLogger.error(logInfo.join(' '))
+    }
+
     if (MEODP.config.log?.type === 'progress') {
       bar?.update(success.count, {
         value: colors.green(success.count),
         error_count: failed.count ? colors.red(failed.count) : 0,
       })
-    }
-    else {
-      // logger.info()
     }
   }
   catch (e) {
@@ -207,7 +219,8 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
 
   for (const [url, info] of urlMap) {
     if (!info.response && !info.ignored) {
-      MEODP.logger.log(COLORFUL_SYMBOLS.line, '    ', COLORFUL_SYMBOLS.error, `Timeout: ${colors.underline(url)}`)
+      MEODP.logger.log(COLORFUL_SYMBOLS.line, '    ', COLORFUL_SYMBOLS.error, colors.red('Timeout:'), colors.underline(url))
+      MEODP.wLogger.error(`  Timeout: ${url}`)
     }
   }
 
