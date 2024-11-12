@@ -1,7 +1,7 @@
 {
   "name": "meodp",
   "type": "module",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "packageManager": "pnpm@9.12.3",
   "description": "Mystic Eyes of Death Perception. Find out dead links in your site.",
   "keywords": [
@@ -28,7 +28,8 @@
   ],
   "scripts": {
     "build": "unbuild",
-    "dev": "unbuild --stub",
+    "dev": "unbuild --stub && pnpm run dev:client",
+    "dev:client": "pnpm -C client run dev",
     "demo": "npm run example",
     "demo:app": "pnpm -C examples/app run dev",
     "example": "vite-node examples/check-site.ts",

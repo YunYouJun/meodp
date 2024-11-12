@@ -131,6 +131,17 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
   const isExternalLink = MEODP.isExternalLink(url, options.urlItem)
   const log = LocalLog.createLog(options.urlItem)
 
+  if (MEODP.isIgnoredLink(url)) {
+    // skipped
+    siteUrlMap.set(url, {
+      statusCode: 0,
+      checkStatus: 'ignored',
+    })
+
+    MEODP.logger.inner(`${colors.dim(`[Ignored] ${colors.underline(url)}`)}`)
+    return
+  }
+
   // 不检查外链资源 && 是外链
   if (!MEODP.config.checkExternalLinks && isExternalLink) {
     let res: Response | null = null

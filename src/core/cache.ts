@@ -14,7 +14,7 @@ export const siteUrlMap = new Map<string, {
   /**
    * 检查状态
    */
-  checkStatus: 'pending' | 'passed' | 'failed' | 'goto'
+  checkStatus: 'pending' | 'passed' | 'failed' | 'goto' | 'ignored'
 }>()
 
 /**
