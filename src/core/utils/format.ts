@@ -14,7 +14,7 @@ const TIME_COLOR: Record<LoadTimeType, ColorFunction> = {
 }
 
 export function getFormattedDuration(duration: number) {
-  const durationText = `${(Math.round(duration) / 1000).toString()}s`
+  const durationText = `${(duration / 1000).toString()}s`
   let type: LoadTimeType
   if (duration < 500) {
     type = 'fast'
@@ -38,10 +38,13 @@ export function getFormattedDataFromResponse(res: Response) {
   const statusInfoText = statusCode >= 400 ? colors.red(`[${statusInfo}]`) : colors.green(`[${statusInfo}]`)
 
   const req = res.request()
-  const duration = req.timing().responseEnd - req.timing().requestStart
+  const duration = Math.round(req.timing().responseEnd - req.timing().requestStart)
   const durationText = `${COLORFUL_SYMBOLS.line} ${getFormattedDuration(duration)} ${COLORFUL_SYMBOLS.line}`
 
   return {
+    /**
+     * 四舍五入 ms
+     */
     duration,
     durationText,
 

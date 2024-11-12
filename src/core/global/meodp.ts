@@ -1,8 +1,11 @@
+import type { Low } from 'lowdb'
 import type { Browser } from 'playwright'
 import type { MEODPConfig, MEODPUrlProps } from '../../types'
+import type { DBData } from '../db'
 import path from 'node:path'
 import process from 'node:process'
 import consola from 'consola'
+import { createLowDB } from '../db'
 import { createMEODPLogger, createWinstonLogger, LocalLog } from '../logger'
 
 export class MEODP {
@@ -24,6 +27,8 @@ export class MEODP {
 
   public static wLogger: ReturnType<typeof createWinstonLogger>
 
+  public static db: Low<DBData>
+
   constructor(config: MEODPConfig) {
     MEODP.config = config
   }
@@ -41,6 +46,11 @@ export class MEODP {
     await LocalLog.init()
     MEODP.logFolder = LocalLog.logFolder || path.resolve(process.cwd(), 'logs/meodp')
     MEODP.wLogger = createWinstonLogger()
+
+    // init db
+    const db = await createLowDB()
+    MEODP.db = db
+    await db.update(data => data.config = MEODP.config)
   }
 
   /**

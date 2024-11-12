@@ -1,5 +1,6 @@
 import type { Page, Response } from 'playwright'
 import type { MEODPUrlProps } from '../../types'
+import type { MEODPRequestItem, MEODPSiteLinkItem } from '../db'
 import { COLORFUL_SYMBOLS } from 'cilicili'
 import consola from 'consola'
 import { colors } from 'consola/utils'
@@ -77,7 +78,6 @@ export async function checkUrlNomoduleAssets(page: Page) {
         return
       }
 
-      const startTime = Date.now()
       const newPage = await context.newPage()
       const response = await newPage.goto(nomoduleUrl)
 
@@ -90,7 +90,8 @@ export async function checkUrlNomoduleAssets(page: Page) {
         linkText,
       } = getFormattedDataFromResponse(response)
 
-      const duration = Date.now() - startTime
+      const req = response.request()
+      const duration = req.timing().responseEnd - req.timing().requestStart
       // paddingSpace
       const durationTxt = colors.dim(`│${colors.blue(`${duration.toString().padStart(4, ' ')}${colors.white('ms')}`)} │`)
 
@@ -126,10 +127,23 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
   const page = await browser.newPage()
 
   const bar = progressBarMap.get(options.urlItem.url)
-  const startTime = Date.now()
 
   const isExternalLink = MEODP.isExternalLink(url, options.urlItem)
   const log = LocalLog.createLog(options.urlItem)
+
+  const siteData = MEODP.db.data.sites[options.urlItem.url]!
+  const siteLinkItem: MEODPSiteLinkItem = {
+    url,
+    statusCode: 0,
+    checkStatus: 'pending',
+    success: 0,
+    failed: 0,
+    ignored: 0,
+    timeout: 0,
+    duration: 0,
+    total: 0,
+    requests: [],
+  }
 
   if (MEODP.isIgnoredLink(url)) {
     // skipped
@@ -139,6 +153,9 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
     })
 
     MEODP.logger.inner(`${colors.dim(`[Ignored] ${colors.underline(url)}`)}`)
+
+    siteData.ignored.push(url)
+    await MEODP.db.write()
     return
   }
 
@@ -151,6 +168,8 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
       })
     }
     catch (e) {
+      siteLinkItem.timeout = 1
+
       MEODP.logger.error(e)
     }
 
@@ -160,6 +179,7 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
     const {
       statusCode,
       statusInfoText,
+      duration,
       durationText,
     } = getFormattedDataFromResponse(res)
     const checkStatus = statusCode < 400 ? 'passed' : 'failed'
@@ -176,30 +196,64 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
       MEODP.wLogger.error(`  ${statusInfoText} ${url} ${durationText}`)
     }
 
+    siteLinkItem.statusCode = statusCode
+    siteLinkItem.checkStatus = checkStatus
+    siteLinkItem.duration = duration
+    siteLinkItem.total = 1
+    siteLinkItem.success = checkStatus === 'passed' ? 1 : 0
+    siteLinkItem.failed = checkStatus === 'failed' ? 1 : 0
+    siteLinkItem.requests = []
+    siteData.links.push(siteLinkItem)
+    await MEODP.db.write()
     return
   }
 
   const urlMap = registerPageEvents(page, options.urlItem)
-  const { success, failed, total, ignored, timeout } = parseUrlMap(urlMap)
   try {
     const res = await page.goto(url, {
       waitUntil: 'networkidle',
     })
     const statusCode = res?.status() || 0
+    const statusText = res?.statusText()
+    const req = res?.request()
+    const duration = Math.round((req?.timing()?.responseEnd || 0) - (req?.timing()?.requestStart || 0))
     siteUrlMap.set(url, {
       response: res,
       statusCode,
       checkStatus: 'goto',
     })
 
-    const duration = (Date.now() - startTime) / 1000
-    const statusText = res?.statusText()
+    // parse it after page.goto finished
+    const { success, failed, total, ignored, timeout } = parseUrlMap(urlMap)
+    siteLinkItem.title = await page.title()
+    siteLinkItem.statusCode = statusCode
+    siteLinkItem.statusText = statusText
+    siteLinkItem.checkStatus = 'goto'
+    siteLinkItem.duration = duration
+    siteLinkItem.total = total.count
+    siteLinkItem.success = success.count
+    siteLinkItem.failed = failed.count
+    siteLinkItem.timeout = timeout.count
+    siteLinkItem.ignored = ignored.count
+    siteLinkItem.requests = Array.from(urlMap.values())
+      .map((value) => {
+        const res = value.response
+        return {
+          failed: value.failed,
+          ignored: value.ignored,
+          url: res?.url(),
+          statusCode: res?.status(),
+          statusText: res?.statusText(),
+        } satisfies MEODPRequestItem
+      })
+
+    // @TODO log by item
     const logInfo = [
       COLORFUL_SYMBOLS.line,
       '  ',
       colors.green(`[${statusCode}${statusText ? ` ${statusText}` : ''}]`),
       colors.cyan(url),
-      colors.dim(`(in ${duration}s)`),
+      colors.dim(`(in ${duration}ms)`),
       total.text,
       success.text,
       failed.text,
@@ -232,6 +286,7 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
     if (!info.response && !info.ignored) {
       MEODP.logger.log(COLORFUL_SYMBOLS.line, '    ', COLORFUL_SYMBOLS.error, colors.red('Timeout:'), colors.underline(url))
       MEODP.wLogger.error(`  Timeout: ${url}`)
+      siteLinkItem.checkStatus = 'timeout'
     }
   }
 
@@ -241,18 +296,25 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
   }
 
   // 所有资源加载成功，设置为通过
-  const urlMapValues = Array.from(urlMap.values())
   const siteUrlItem = siteUrlMap.get(url)
   if (siteUrlItem) {
-    if (urlMapValues.every(value => value.response?.status() && value.response?.status() < 400) && noModuleAssetsPassed) {
+    const isAllRequestsPassed = siteLinkItem.requests
+      .filter(value => !value.ignored)
+      .every(value => value.statusCode && value.statusCode < 400)
+    if (isAllRequestsPassed && noModuleAssetsPassed) {
       siteUrlItem.checkStatus = 'passed'
-      const successCount = Array.from(siteUrlMap.values()).filter(value => value.checkStatus === 'passed').length
-      bar?.update(successCount)
+      // const successCount = Array.from(siteUrlMap.values()).filter(value => value.checkStatus === 'passed').length
+      // bar?.update(successCount)
     }
     else {
       siteUrlItem.checkStatus = 'failed'
     }
+
+    siteLinkItem.checkStatus = siteUrlItem.checkStatus
   }
+
+  siteData.links.push(siteLinkItem)
+  await MEODP.db.write()
 
   // 外链就不继续检查外链的页面链接了
   if (!isExternalLink) {
@@ -276,6 +338,8 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
     }
   }
   await page.close()
+
+  return siteLinkItem
 }
 
 /**
@@ -303,10 +367,25 @@ export async function checkSite(props: MEODPUrlProps) {
     checkStatus: 'pending',
   })
 
+  await MEODP.db.update((data) => {
+    data.sites[homeUrl] = {
+      name: props.name,
+      url: homeUrl,
+      checkStatus: 'pending',
+      links: [],
+      ignored: [],
+    }
+  })
+
   bar?.setTotal(siteUrlMap.size)
-  await checkSiteUrl(homeUrl, {
+  const siteLinkItem = await checkSiteUrl(homeUrl, {
     urlItem: props,
     checkNoModule: true,
+  })
+  await MEODP.db.update((data) => {
+    const siteItem = data.sites[homeUrl]
+    siteItem.title = siteLinkItem?.title
+    siteItem.checkStatus = siteItem.links.every(link => link.checkStatus === 'passed') ? 'passed' : 'failed'
   })
 
   await queue.onIdle()

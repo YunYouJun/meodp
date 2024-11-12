@@ -3,6 +3,7 @@
   "scripts": {
     "dev": "tsx node_modules/meodp/bin/index.ts",
     "dev:bin": "meodp-ts",
+    "export": "meodp export",
     "start": "meodp"
   },
   "devDependencies": {

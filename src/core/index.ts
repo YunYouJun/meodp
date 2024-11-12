@@ -1,6 +1,7 @@
 export * from './cache'
 export * from './check'
 export * from './config'
+export * from './db'
 export * from './global/env'
 export * from './logger'
 export * from './progress'

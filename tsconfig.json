@@ -2,17 +2,29 @@
   "compilerOptions": {
     "target": "ESNext",
     // Enable latest features
-    "lib": ["ESNext"],
+    "lib": ["ESNext", "DOM"],
     "moduleDetection": "force",
+
+    "baseUrl": ".",
     "module": "ESNext",
     // Bundler mode
     "moduleResolution": "Bundler",
 
     "paths": {
+      "~/*": ["./client/src/*"],
       "meodp": ["./src/index.ts"]
     },
 
     "resolveJsonModule": true,
+
+    "types": [
+      "vitest",
+      "vite/client",
+      "vite-plugin-vue-layouts/client",
+      "vite-plugin-pwa/client",
+      "unplugin-vue-router/client"
+    ],
+
     "allowImportingTsExtensions": true,
     "allowJs": true,
     // Best practices

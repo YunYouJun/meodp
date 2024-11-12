@@ -8,6 +8,7 @@ import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import { defaultMEODPConfig, runByConfig } from '../core'
 import { MEODP } from '../core/global'
+import { output } from '../core/output'
 import { commonOptions } from './options'
 
 // export const __DEV__ = process.env.NODE_ENV === 'development'
@@ -54,8 +55,26 @@ export const cli = yargs(hideBin(process.argv))
       console.log()
       MEODP.logger.success(`All done! in ${colors.yellow(duration / 1000)}s.`)
 
+      console.log()
+      consola.start('🚀  Start exporting Markdown Report...')
+      await output(argv.type as 'html' | 'md')
+
       // caused by multiBar?
       process.exit(0)
+    },
+  )
+  .command(
+    'export [root]',
+    'Export MEODP Report',
+    args => commonOptions(args).option('type', {
+      alias: 't',
+      describe: 'Export type',
+      choices: ['html', 'md'],
+      default: 'md',
+    }),
+    async (argv) => {
+      // export
+      await output(argv.type as 'html' | 'md')
     },
   )
   .alias('h', 'help')
