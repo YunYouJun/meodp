@@ -170,7 +170,12 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
     catch (e) {
       siteLinkItem.timeout = 1
 
-      MEODP.logger.error(e)
+      MEODP.logger.inner(
+        colors.red('[Timeout]'),
+        colors.underline(url),
+      )
+
+      consola.debug(e)
     }
 
     if (!res)
@@ -241,7 +246,8 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
         return {
           failed: value.failed,
           ignored: value.ignored,
-          url: res?.url(),
+          // res.url 还没用返回
+          url: req?.url(),
           statusCode: res?.status(),
           statusText: res?.statusText(),
         } satisfies MEODPRequestItem

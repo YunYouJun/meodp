@@ -42,6 +42,25 @@ function getErrorMdContent(sites: Record<string, MEODPSiteItem>) {
   let md = ''
   for (const [key, value] of errorSites) {
     md += `- [${value.name || value.url}](${value.url})\n`
+
+    for (const link of value.links) {
+      if (link.checkStatus === 'passed') {
+        continue
+      }
+      const statusInfo = link.statusText ? `${link.statusCode} ${link.statusText}` : link.statusCode
+      md += `  - \[${statusInfo}\] <${link.url}>\n`
+
+      for (const req of link.requests) {
+        if (req.failed) {
+          if (req.statusCode) {
+            const statusInfo = req.statusText ? `${req.statusCode} ${req.statusText}` : req.statusCode
+            md += `    - \[${statusInfo}\] <${req.url}>\n`
+          } else {
+            md += `    - [⏰ TIMEOUT] <${req.url}>\n`
+          }
+        }
+      }
+    }
   }
 
   return md
@@ -123,7 +142,7 @@ export async function outputMarkdown(options = {
   await db.read()
 
   const rootDir = process.cwd()
-  const mdPath = path.resolve(rootDir, 'logs/meodp/result.md')
+  const mdPath = path.resolve(rootDir, 'logs/meodp/report.md')
 
   await fs.ensureFile(mdPath)
 
@@ -149,7 +168,7 @@ ${getErrorMdContent(db.data.sites)}
 `
 
   // site detail
-  mdContent += '\n## Sites\n'
+  mdContent += '## Sites\n'
   for (const [key, value] of Object.entries(db.data.sites)) {
     const site = value
     mdContent += `\n### ${getCheckStatusEmoji(site.checkStatus)} [${site.name || site.url}](${site.url})\n`
