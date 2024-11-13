@@ -247,7 +247,7 @@ export async function checkSiteUrl(url: string, options: CheckSiteUrlOptions) {
           failed: value.failed,
           ignored: value.ignored,
           // res.url 还没用返回
-          url: req?.url(),
+          url: value.request.url(),
           statusCode: res?.status(),
           statusText: res?.statusText(),
         } satisfies MEODPRequestItem

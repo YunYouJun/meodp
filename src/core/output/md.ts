@@ -48,13 +48,13 @@ function getErrorMdContent(sites: Record<string, MEODPSiteItem>) {
         continue
       }
       const statusInfo = link.statusText ? `${link.statusCode} ${link.statusText}` : link.statusCode
-      md += `  - \[${statusInfo}\] <${link.url}>\n`
+      md += `  - \[${statusInfo}\] [${link.url}](${link.url})\n`
 
       for (const req of link.requests) {
         if (req.failed) {
           if (req.statusCode) {
             const statusInfo = req.statusText ? `${req.statusCode} ${req.statusText}` : req.statusCode
-            md += `    - \[${statusInfo}\] <${req.url}>\n`
+            md += `    - \[${statusInfo}\] [${req.url}](${req.url})\n`
           } else {
             md += `    - [⏰ TIMEOUT] <${req.url}>\n`
           }
