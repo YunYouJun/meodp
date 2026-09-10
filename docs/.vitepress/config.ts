@@ -56,7 +56,7 @@ export default defineConfig({
     },
   },
   themeConfig: {
-    logo: { src: '/brand/logo.svg', alt: 'MEODP' },
+    logo: { light: '/brand/logo-light.svg', dark: '/brand/logo.svg', alt: 'MEODP' },
     socialLinks: [{ icon: 'github', link: repository }],
     search: {
       provider: 'local',

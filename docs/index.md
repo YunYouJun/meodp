@@ -5,8 +5,9 @@ hero:
   text: Know which links need attention.
   tagline: Check your sites and friend links, keep history, and share reports.
   image:
-    src: /brand/hero.webp
-    alt: A cyan eye observing a network of links, with a broken connection highlighted in coral.
+    light: /brand/logo-light.svg
+    dark: /brand/logo.svg
+    alt: MEODP eye logo with a coral broken-link accent.
     width: 480
     height: 480
   actions:

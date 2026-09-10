@@ -5,8 +5,9 @@ hero:
   text: 知道哪些链接需要处理
   tagline: 检查网站与友链，保留历史，分享检测报告。
   image:
-    src: /brand/hero.webp
-    alt: 青色眼睛感知链接网络，以珊瑚红标出断开的连接。
+    light: /brand/logo-light.svg
+    dark: /brand/logo.svg
+    alt: MEODP 眼睛标志，以珊瑚红点缀断链。
     width: 480
     height: 480
   actions:

@@ -19,29 +19,28 @@
 }
 
 .VPHomeHero .image-container {
-  width: 360px;
-  height: 360px;
+  width: 280px;
+  height: 280px;
   max-width: 100%;
   transform: none;
 }
 
 .VPHomeHero .image-src {
-  max-width: 360px;
-  max-height: 360px;
+  max-width: 280px;
+  max-height: 280px;
   width: 100%;
   height: auto;
-  border-radius: 50%;
 }
 
 @media (max-width: 639px) {
   .VPHomeHero .image-container {
-    width: 224px;
-    height: 224px;
+    width: 200px;
+    height: 200px;
   }
 
   .VPHomeHero .image-src {
-    max-width: 224px;
-    max-height: 224px;
+    max-width: 200px;
+    max-height: 200px;
   }
 }
 
