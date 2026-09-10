@@ -37,7 +37,7 @@ function navigation(prefix: string, chinese: boolean): DefaultTheme.Config {
 export default defineConfig({
   title: 'MEODP',
   base,
-  head: [['link', { rel: 'icon', type: 'image/svg+xml', href: `${base}favicon.svg` }]],
+  head: [['link', { rel: 'icon', type: 'image/svg+xml', href: `${base}brand/logo.svg` }]],
   lastUpdated: true,
   // Keep the historical research note in Git without publishing its source-file links.
   srcExclude: ['competitive-analysis.md'],
@@ -56,6 +56,7 @@ export default defineConfig({
     },
   },
   themeConfig: {
+    logo: { src: '/brand/logo.svg', alt: 'MEODP' },
     socialLinks: [{ icon: 'github', link: repository }],
     search: {
       provider: 'local',

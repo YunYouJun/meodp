@@ -4,6 +4,11 @@ hero:
   name: MEODP
   text: 知道哪些链接需要处理
   tagline: 检查网站与友链，保留历史，分享检测报告。
+  image:
+    src: /brand/hero.webp
+    alt: 青色眼睛感知链接网络，以珊瑚红标出断开的连接。
+    width: 480
+    height: 480
   actions:
     - theme: brand
       text: 快速开始

@@ -1,0 +1,56 @@
+:root {
+  --vp-c-brand-1: #087d8a;
+  --vp-c-brand-2: #096a76;
+  --vp-c-brand-3: #087d8a;
+  --vp-c-brand-soft: #087d8a18;
+  --vp-home-hero-name-color: #087d8a;
+}
+
+.dark {
+  --vp-c-brand-1: #69dce7;
+  --vp-c-brand-2: #98e7ee;
+  --vp-c-brand-3: #087d8a;
+  --vp-c-brand-soft: #69dce71a;
+  --vp-home-hero-name-color: #69dce7;
+}
+
+.VPHomeHero .image {
+  margin: 0 0 24px;
+}
+
+.VPHomeHero .image-container {
+  width: 360px;
+  height: 360px;
+  max-width: 100%;
+  transform: none;
+}
+
+.VPHomeHero .image-src {
+  max-width: 360px;
+  max-height: 360px;
+  width: 100%;
+  height: auto;
+  border-radius: 50%;
+}
+
+@media (max-width: 639px) {
+  .VPHomeHero .image-container {
+    width: 224px;
+    height: 224px;
+  }
+
+  .VPHomeHero .image-src {
+    max-width: 224px;
+    max-height: 224px;
+  }
+}
+
+@media (min-width: 960px) {
+  .VPHomeHero .container {
+    align-items: center;
+  }
+
+  .VPHomeHero .image {
+    margin: 0;
+  }
+}

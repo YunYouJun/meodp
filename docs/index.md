@@ -4,6 +4,11 @@ hero:
   name: MEODP
   text: Know which links need attention.
   tagline: Check your sites and friend links, keep history, and share reports.
+  image:
+    src: /brand/hero.webp
+    alt: A cyan eye observing a network of links, with a broken connection highlighted in coral.
+    width: 480
+    height: 480
   actions:
     - theme: brand
       text: Get started
