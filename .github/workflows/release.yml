@@ -1,0 +1,59 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: npm-release-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org
+      - name: Install npm with trusted publishing support
+        run: npm install --global 'npm@^11.5.1'
+      - name: Validate release version and channel
+        id: release
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          PRERELEASE: ${{ github.event.release.prerelease }}
+        run: |
+          node --input-type=module <<'JS'
+          import { appendFileSync, readFileSync } from 'node:fs'
+          const { name, version } = JSON.parse(readFileSync('packages/meodp/package.json', 'utf8'))
+          if (name !== 'meodp' || process.env.RELEASE_TAG !== `v${version}`)
+            throw new Error('Release tag must equal v + packages/meodp/package.json version')
+          const prerelease = version.includes('-')
+          if (prerelease !== (process.env.PRERELEASE === 'true'))
+            throw new Error('GitHub prerelease status must match the package version')
+          appendFileSync(process.env.GITHUB_OUTPUT, `npm_tag=${prerelease ? 'next' : 'latest'}\n`)
+          JS
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Test package
+        run: pnpm test
+      - name: Typecheck package
+        run: pnpm --filter meodp typecheck
+      - name: Publish meodp with OIDC
+        working-directory: packages/meodp
+        env:
+          NPM_TAG: ${{ steps.release.outputs.npm_tag }}
+        # prepack builds the package before publishing.
+        run: npm publish --access public --tag "$NPM_TAG"

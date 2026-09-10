@@ -50,8 +50,7 @@
     "test:e2e": "pnpm exec playwright test",
     "typecheck": "tsx scripts/build-report-viewer.ts && tsc --noEmit -p tsconfig.json",
     "prepack": "npm run build",
-    "prepublishOnly": "npm run build",
-    "release": "bumpp --no-commit --no-tag --no-push && npm publish"
+    "release": "npm version --no-git-tag-version"
   },
   "peerDependencies": {
     "playwright": "^1",

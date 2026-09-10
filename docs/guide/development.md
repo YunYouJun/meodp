@@ -57,6 +57,33 @@ DOCS_BASE=/mystic-eyes-of-death-perception/ pnpm docs:build
 
 Upload the generated directory through your hosting workflow. Building documentation or committing changes does not deploy the site.
 
+## Release to npm
+
+The `release.yml` workflow publishes only `packages/meodp` when a GitHub Release is **published**. Ordinary pushes and draft releases do not publish. The release tag must equal `v` plus the package version. Stable versions use npm's `latest` tag; versions such as `0.2.0-beta.1` require a GitHub prerelease and use `next`.
+
+Configure a GitHub Actions trusted publisher in the [npm package settings](https://www.npmjs.com/package/meodp/access):
+
+| Field                | Value                                                                           |
+| -------------------- | ------------------------------------------------------------------------------- |
+| Organization or user | `YunYouJun`                                                                     |
+| Repository           | The current GitHub repository name, currently `mystic-eyes-of-death-perception` |
+| Workflow filename    | `release.yml`                                                                   |
+| Environment          | Leave empty; the workflow does not use a GitHub environment                     |
+| Allowed actions      | Enable direct publishing with `npm publish`                                     |
+
+The workflow uses a GitHub-hosted runner, Node.js 24, npm 11.5.1+, and `id-token: write`. It needs no `NPM_TOKEN` secret; npm generates provenance automatically for public repositories and packages. The workflow file must exist on GitHub before configuring trust. If the repository is renamed, recreate the trusted publisher with the new name and update package repository metadata. See [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/).
+
+Prepare a version locally:
+
+```bash
+pnpm release minor
+pnpm install
+```
+
+`pnpm release <patch|minor|major|version>` only changes the package version. It does not commit, tag, push, or publish. Review and commit the change, push the release commit, then create a GitHub Release with the matching tag, for example `v0.2.0`. Publishing that release starts the workflow. Use a version that has not already been published to npm.
+
+The workflow checks the release version, runs package tests and type checking, then calls `npm publish` inside `packages/meodp`; the package lifecycle scripts build its outputs. The first successful Actions run is required to verify the npm-side OIDC binding end to end.
+
 ::: details Verification coverage
 The HTTP and sitemap tests cover local responses, redirects, restrictions, retries, timeouts, history, report validation, CLI behavior, sitemap formats, nested indexes, gzip, cycles, and discovery bounds. `pnpm build` checks the package's ESM, CommonJS, and declaration output.
 
