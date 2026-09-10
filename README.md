@@ -1,46 +1,66 @@
 # MEODP (Mystic Eyes of Death Perception)
 
-Written by Typescript, based on [Playwright](https://playwright.dev/).
+Check website and friend-link availability with structured results, history, and portable reports. Built on [linkinator](https://github.com/JustinBeckwith/linkinator).
 
-## Usage
+## Install
 
-You can use it like a lib or a cli.
-
-Or like an application:
-
-```ts
-// Create a config file: `meodp.config.ts` in your project root.
-import { defineConfig } from 'meodp'
-
-export default defineConfig({
-
-})
-```
-
-## Ref
-
-- [lychee](https://lychee.cli.rs/)
-
-## Logs
+Requires **Node.js 22.19+**. The HTTP checker does not require Playwright or a browser installation.
 
 ```bash
-logs/meodp
+pnpm add meodp
 ```
 
-## FAQ
+```ts
+import { checkLinks, checkSitemap, writeReports } from 'meodp/check'
 
-### 与 lychee 的区别
+const links = await checkLinks(['https://example.com/'])
+await writeReports(links, 'reports/links')
 
-lychee 是一个使用 Rust 编写的快速检测链接的命令行。
-它的命令行应该能满足你使用命令行的大部分需求。
+const pages = await checkSitemap('https://example.com/', { discover: true })
+await writeReports(pages, 'reports/pages')
+```
 
-但我希望能够通过脚本/配置自由地定制检测流程、日志，并记录相关内容，执行对应的函数。
-因此我们需要一个类似 SDK 的库，来实现类似的功能。
-同时基于 Typescript 可以获得更好的开发灵活性，而使用 Playwright 则可以模拟浏览器以检测页面中的资源加载。
+```bash
+pnpm exec meodp check links.yml --output reports/links
+pnpm exec meodp sitemap https://example.com/sitemap.xml --output reports/pages
+pnpm exec meodp report reports/pages/report.json --output reports/site
+```
 
-如果可能，它未来也许可以支持插件或预置配置。
+`check` and `sitemap` make HTTP requests; `report` renders saved results without scanning. Running `meodp` with no arguments shows help. The optional legacy browser scanner uses `meodp scan` and its existing configuration.
 
-## TODO
+Full usage and result semantics are in the [package README](packages/meodp/README.md).
 
-- [ ] 文件下载
-- [ ] HTML 报告
+## Workspace
+
+The workspace layout follows [starter-monorepo](https://github.com/YunYouJun/starter-monorepo). Only `packages/meodp` is published; the root, docs, client, and examples are private.
+
+```text
+packages/meodp/   Published SDK, CLI, report viewer, and tests
+apps/client/      Existing experimental Vitesse client
+docs/            Documentation and research notes
+examples/app/    Consumer linked to meodp through workspace:*
+```
+
+The report viewer is bundled into the library's HTML output. It does not depend on the experimental client.
+
+## Development
+
+```bash
+pnpm install
+pnpm test
+pnpm typecheck
+pnpm lint
+pnpm build
+pnpm exec meodp --help
+pnpm --filter meodp pack
+```
+
+`pnpm build`, `pnpm test`, and `pnpm typecheck` target the published package. Start the experimental client explicitly with `pnpm dev:client`. `pnpm demo` runs the legacy browser scanner against `examples/app/meodp.config.ts`; install Playwright browsers before using it.
+
+For source-level CLI development, use `pnpm --filter meodp exec tsx bin/index.ts --help`. Shared Git hooks and lint rules live at the workspace root. Release commands target the `meodp` package; the workspace root cannot be published.
+
+See [competitive analysis](docs/competitive-analysis.md) for the original investigation and project scope.
+
+## License
+
+[MIT](LICENSE)

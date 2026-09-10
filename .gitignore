@@ -177,3 +177,10 @@ dist
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+/reports/
+/packages/meodp/src/check/viewer/assets.generated.ts
+
+**/.vitepress/cache/
+**/.vitepress/dist/
+**/playwright-report/
+**/test-results/

@@ -4,10 +4,12 @@ on:
   push:
     branches:
       - main
+      - master
 
   pull_request:
     branches:
       - main
+      - master
 
 jobs:
   lint:
@@ -41,3 +43,21 @@ jobs:
 
       - name: Typecheck
         run: pnpm run typecheck
+
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.19.0
+          cache: pnpm
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Test HTTP checks and sitemap discovery
+        run: pnpm test
+      - name: Build package
+        run: pnpm build
+      - name: Verify workspace CLI
+        run: pnpm exec meodp --help

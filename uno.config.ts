@@ -1,3 +1,3 @@
-import unoConfig from './client/uno.config'
+import unoConfig from './apps/client/uno.config'
 
 export default unoConfig

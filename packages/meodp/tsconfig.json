@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "src/**/*.ts",
+    "build.config.ts",
+    "bin/index.ts",
+    "test/check.test.ts",
+    "test/sitemap.test.ts",
+    "scripts/**/*.ts"
+  ]
+}

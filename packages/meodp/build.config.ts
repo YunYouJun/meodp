@@ -6,6 +6,9 @@ export default defineBuildConfig({
   entries: [
     'src/index',
     'src/cli/index',
+    'src/cli/main',
+    'src/check/index',
+    'src/check/cli',
   ],
 
   // Generates .d.ts declaration file
@@ -18,6 +21,9 @@ export default defineBuildConfig({
   ],
 
   rollup: {
+    dts: {
+      tsconfig: 'tsconfig.json',
+    },
     emitCJS: true,
     // inline cilicili
     inlineDependencies: true,

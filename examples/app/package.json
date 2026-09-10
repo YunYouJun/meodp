@@ -1,10 +1,11 @@
 {
-  "name": "app",
+  "name": "@meodp/example",
+  "type": "module",
+  "private": true,
   "scripts": {
-    "dev": "tsx node_modules/meodp/bin/index.ts",
-    "dev:bin": "meodp-ts",
+    "dev": "meodp scan",
     "export": "meodp export",
-    "start": "meodp"
+    "start": "meodp --help"
   },
   "devDependencies": {
     "meodp": "workspace:*"

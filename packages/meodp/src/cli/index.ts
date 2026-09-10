@@ -82,6 +82,6 @@ export const cli = yargs(hideBin(process.argv))
   .showHelpOnFail(false)
   .help()
 
-export function run() {
-  cli.parse()
+export async function run(args = hideBin(process.argv), scriptName = 'meodp'): Promise<void> {
+  await cli.scriptName(scriptName).parseAsync(args)
 }

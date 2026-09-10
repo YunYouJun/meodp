@@ -1,82 +1,34 @@
 {
-  "name": "meodp",
+  "name": "meodp-workspace",
   "type": "module",
-  "version": "0.0.8",
+  "private": true,
   "packageManager": "pnpm@9.12.3",
-  "description": "Mystic Eyes of Death Perception. Find out dead links in your site.",
-  "keywords": [
-    "meodp",
-    "check"
-  ],
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
-    }
+  "engines": {
+    "node": ">=22.19.0"
   },
-  "main": "./dist/index.mjs",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "bin": {
-    "meodp-ts": "bin/index.ts",
-    "meodp": "bin/index.mjs"
-  },
-  "files": [
-    "bin",
-    "dist"
-  ],
   "scripts": {
-    "build": "unbuild",
-    "dev": "unbuild --stub",
-    "dev:client": "pnpm -C client run dev",
-    "demo": "pnpm -C examples/app run dev",
-    "demo:export": "pnpm -C examples/app run export",
-    "demo:app": "pnpm -C examples/app run dev",
-    "example": "vite-node examples/check-site.ts",
-    "test": "npm run test:e2e",
-    "test:e2e": "pnpm exec playwright test",
+    "build": "pnpm --filter meodp build",
+    "dev": "pnpm --filter meodp dev",
+    "dev:client": "pnpm --filter @meodp/client dev",
+    "demo": "pnpm --filter @meodp/example dev",
+    "demo:export": "pnpm --filter @meodp/example export",
+    "example": "tsx examples/check-site.ts",
+    "test": "pnpm --filter meodp test",
+    "test:e2e": "pnpm --filter meodp test:e2e",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
-    "prepublishOnly": "npm run build",
-    "release": "bumpp --no-commit --no-tag --no-push && npm publish",
+    "typecheck": "pnpm --filter meodp typecheck",
+    "release": "pnpm --filter meodp release",
     "prepare": "simple-git-hooks"
-  },
-  "peerDependencies": {
-    "playwright": "^1",
-    "typescript": "^5.0.0"
-  },
-  "dependencies": {
-    "c12": "^2.0.1",
-    "cli-progress": "^3.12.0",
-    "consola": "^3.2.3",
-    "date-fns": "^4.1.0",
-    "fs-extra": "^11.2.0",
-    "lowdb": "^7.0.1",
-    "markdown-table": "^3.0.4",
-    "p-queue": "^8.0.1",
-    "strip-ansi": "^7.1.0",
-    "winston": "^3.17.0",
-    "yargs": "^17.7.2"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.8.0",
-    "@playwright/test": "^1.48.2",
-    "@types/bun": "latest",
-    "@types/cli-progress": "^3.11.6",
-    "@types/fs-extra": "^11.0.4",
-    "@types/node": "^22.9.0",
-    "@types/yargs": "^17.0.33",
     "@unocss/eslint-plugin": "^0.64.0",
-    "cilicili": "^0.1.1",
     "eslint": "^9.14.0",
     "eslint-plugin-format": "^0.1.2",
     "lint-staged": "^15.2.10",
-    "playwright": "^1.48.2",
+    "meodp": "workspace:*",
     "simple-git-hooks": "^2.11.1",
-    "tsx": "^4.19.2",
-    "unbuild": "^2.0.0",
-    "vite-node": "^2.1.4"
+    "tsx": "^4.19.2"
   },
   "simple-git-hooks": {
     "pre-commit": "pnpm lint-staged"

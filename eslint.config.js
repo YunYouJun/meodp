@@ -8,4 +8,9 @@ export default antfu({
   rules: {
     'no-console': 'off',
   },
+}, {
+  files: ['packages/meodp/test/check.test.ts', 'packages/meodp/test/sitemap.test.ts'],
+  rules: {
+    'test/no-import-node-test': 'off',
+  },
 })

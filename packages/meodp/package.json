@@ -1,0 +1,99 @@
+{
+  "name": "meodp",
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Check website and friend-link availability with structured results, history, and reports.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YunYouJun/mystic-eyes-of-death-perception.git",
+    "directory": "packages/meodp"
+  },
+  "keywords": [
+    "meodp",
+    "check"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./check": {
+      "import": {
+        "types": "./dist/check/index.d.mts",
+        "default": "./dist/check/index.mjs"
+      },
+      "require": {
+        "types": "./dist/check/index.d.cts",
+        "default": "./dist/check/index.cjs"
+      }
+    }
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "meodp": "bin/index.mjs"
+  },
+  "files": [
+    "bin/index.mjs",
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "scripts": {
+    "build": "tsx scripts/build-report-viewer.ts && unbuild",
+    "dev": "tsx scripts/build-report-viewer.ts && unbuild --stub",
+    "test": "tsx scripts/build-report-viewer.ts && tsx --test test/check.test.ts test/sitemap.test.ts",
+    "test:e2e": "pnpm exec playwright test",
+    "typecheck": "tsx scripts/build-report-viewer.ts && tsc --noEmit -p tsconfig.json",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run build",
+    "release": "bumpp --no-commit --no-tag --no-push && npm publish"
+  },
+  "peerDependencies": {
+    "playwright": "^1",
+    "typescript": "^5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "playwright": {
+      "optional": true
+    },
+    "typescript": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "c12": "^2.0.1",
+    "cli-progress": "^3.12.0",
+    "consola": "^3.2.3",
+    "date-fns": "^4.1.0",
+    "fast-xml-parser": "^5.11.1",
+    "fs-extra": "^11.2.0",
+    "js-yaml": "^4.1.0",
+    "linkinator": "^8.1.0",
+    "lowdb": "^7.0.1",
+    "markdown-table": "^3.0.4",
+    "p-queue": "^8.0.1",
+    "strip-ansi": "^7.1.0",
+    "winston": "^3.17.0",
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.2",
+    "@types/bun": "latest",
+    "@types/cli-progress": "^3.11.6",
+    "@types/fs-extra": "^11.0.4",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.9.0",
+    "@types/yargs": "^17.0.33",
+    "cilicili": "^0.1.1",
+    "esbuild": "^0.28.2",
+    "playwright": "^1.48.2",
+    "tsx": "^4.19.2",
+    "unbuild": "^2.0.0",
+    "vite-node": "^2.1.4"
+  }
+}
