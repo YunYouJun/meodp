@@ -3,6 +3,6 @@
   "compilerOptions": {
     "types": ["node"]
   },
-  "include": [".vitepress/**/*.ts"],
+  "include": [".vitepress/**/*.ts", ".vitepress/**/*.vue"],
   "exclude": [".vitepress/cache", ".vitepress/dist"]
 }

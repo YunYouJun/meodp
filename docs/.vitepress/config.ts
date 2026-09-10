@@ -9,6 +9,7 @@ function navigation(prefix: string, chinese: boolean): DefaultTheme.Config {
   return {
     nav: [
       { text: chinese ? '指南' : 'Guide', link: `${prefix}/guide/quick-start` },
+      { text: chinese ? '小工具' : 'Tools', link: `${prefix}/tools/sitemap` },
       { text: 'API', link: `${prefix}/reference/api` },
       { text: 'CLI', link: `${prefix}/reference/cli` },
     ],
@@ -22,6 +23,9 @@ function navigation(prefix: string, chinese: boolean): DefaultTheme.Config {
         { text: chinese ? 'API 参考' : 'API reference', link: `${prefix}/reference/api` },
         { text: chinese ? '开发与验证' : 'Development and verification', link: `${prefix}/guide/development` },
       ],
+    }, {
+      text: chinese ? '小工具' : 'Tools',
+      items: [{ text: chinese ? 'Sitemap 解析器' : 'Sitemap parser', link: `${prefix}/tools/sitemap` }],
     }],
     outline: { level: [2, 3], label: chinese ? '本页目录' : 'On this page' },
     docFooter: { prev: chinese ? '上一篇' : 'Previous', next: chinese ? '下一篇' : 'Next' },

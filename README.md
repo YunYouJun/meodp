@@ -71,7 +71,7 @@ pnpm exec meodp --help
 pnpm --filter meodp pack
 ```
 
-`pnpm build` and `pnpm test` target the published package; `pnpm typecheck` checks the package and docs configuration. `pnpm docs:dev` starts the bilingual documentation at `127.0.0.1`; `pnpm docs:preview` previews its built output. See the [development guide](docs/guide/development.md) for workspace commands and deployment base paths. Start the experimental client explicitly with `pnpm dev:client`. `pnpm demo` runs the legacy browser scanner against `examples/app/meodp.config.ts`; install Playwright browsers before using it.
+`pnpm build` and `pnpm test` target the published package; `pnpm typecheck` checks the package, docs configuration, and Vue components. `pnpm docs:dev` starts the bilingual documentation at `127.0.0.1`; `pnpm docs:preview` previews its built output. See the [development guide](docs/guide/development.md) for workspace commands and deployment base paths. Start the experimental client explicitly with `pnpm dev:client`. `pnpm demo` runs the legacy browser scanner against `examples/app/meodp.config.ts`; install Playwright browsers before using it.
 
 `pnpm run ci` runs lint, type checking, HTTP tests, package build, browser tests, and the documentation build. Install test browsers once with `pnpm --filter meodp exec playwright install`.
 

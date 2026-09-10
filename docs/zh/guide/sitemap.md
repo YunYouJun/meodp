@@ -1,5 +1,7 @@
 # Sitemap 子页面检测
 
+只需检查生成的 XML 文件、提取和筛选 URL 时，可以使用纯前端的 [Sitemap 解析器](../tools/sitemap)，不会发起网络检测。
+
 通过 sitemap 获取页面清单，再复用 MEODP 的 linkinator 检测适配、历史记录和报告。
 
 ## 从 sitemap 或站点开始

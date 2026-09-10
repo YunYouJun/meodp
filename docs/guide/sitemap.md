@@ -1,5 +1,7 @@
 # Sitemap page checks
 
+To inspect a generated XML file without making requests, use the browser-only [Sitemap parser](../tools/sitemap).
+
 Use a sitemap to supply the page list, then reuse MEODP's linkinator adapter, history, and reports.
 
 ## Start with a sitemap or a site

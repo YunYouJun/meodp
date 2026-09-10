@@ -29,7 +29,7 @@ pnpm docs:build
 pnpm exec meodp --help
 ```
 
-`test` 与 `build` 面向发布包，`typecheck` 覆盖发布包及文档配置。CI 会执行这些检查并构建文档。
+`test` 与 `build` 面向发布包，`typecheck` 覆盖发布包、文档配置和 Vue 组件。CI 会执行这些检查并构建文档。
 
 | 命令                                               | 用途                                        |
 | -------------------------------------------------- | ------------------------------------------- |
@@ -47,7 +47,7 @@ pnpm exec meodp --help
 
 英文页面位于 `docs/`，对应中文页面位于 `docs/zh/`，保持相同的相对路径以便切换语言时保留当前页面。行为变更时同步维护两种语言，API 数据声明直接引用包源码。
 
-文档站包含本地搜索和构建时死链检查。产物目录 `docs/.vitepress/dist` 不纳入 Git。`docs/competitive-analysis.md` 保留为历史调研笔记，不参与文档站发布。
+文档站包含本地搜索、构建时死链检查和纯前端的 [Sitemap 解析器](../tools/sitemap)。产物目录 `docs/.vitepress/dist` 不纳入 Git。`docs/competitive-analysis.md` 保留为历史调研笔记，不参与文档站发布。
 
 默认部署前缀为 `/`。部署到仓库子路径时，指定目标前缀构建：
 
@@ -86,6 +86,8 @@ pnpm install
 
 ::: details 验证范围
 HTTP 与 sitemap 测试覆盖本地响应、跳转、访问受限、重试、超时、历史、报告校验、CLI 行为，以及 sitemap 格式、嵌套索引、gzip、循环和发现上限。`pnpm build` 验证 ESM、CommonJS 与类型声明产物。
+
+`pnpm test:e2e` 在 `127.0.0.1:4175` 启动文档站，使用 Chromium、Firefox 和 WebKit 验证报告查看器及 Sitemap 解析器。解析器覆盖文件选择和拖放、命名空间与 CDATA、重复和无效 URL、筛选与导出、分页、错误 XML、输入上限、索引引用不触发请求，以及英文移动端布局。测试失败时保存 HTML 报告，不自动启动报告服务器。
 
 发布前检查 `pnpm --filter meodp pack` 的包内容，确认包含 CLI 和类型声明，不包含工作区应用、测试及文档。文档修改后构建并预览两种语言，操作搜索与语言切换，检查桌面和移动端导航。浏览器验证不代表任意外部站点的可访问性。
 :::

@@ -29,7 +29,7 @@ pnpm docs:build
 pnpm exec meodp --help
 ```
 
-`test` and `build` target the published package. `typecheck` covers the package and documentation configuration. CI runs these checks and builds the documentation.
+`test` and `build` target the published package. `typecheck` covers the package, documentation configuration, and Vue components. CI runs these checks and builds the documentation.
 
 | Command                                            | Use                                                       |
 | -------------------------------------------------- | --------------------------------------------------------- |
@@ -47,7 +47,7 @@ pnpm exec meodp --help
 
 Keep English pages under `docs/` and corresponding Chinese pages under `docs/zh/` with matching paths. The language switch then preserves the current page. Update both versions when behavior changes. API data declarations are imported directly from the package source.
 
-The site includes local search and build-time dead-link checks. Its output is `docs/.vitepress/dist`, excluded from Git. `docs/competitive-analysis.md` remains a historical research note and is excluded from the published pages.
+The site includes local search, build-time dead-link checks, and a browser-only [Sitemap parser](../tools/sitemap). Its output is `docs/.vitepress/dist`, excluded from Git. `docs/competitive-analysis.md` remains a historical research note and is excluded from the published pages.
 
 The default base is `/`. For hosting below a repository path, build with the desired prefix:
 
@@ -86,6 +86,8 @@ The workflow checks the release version, runs package tests and type checking, t
 
 ::: details Verification coverage
 The HTTP and sitemap tests cover local responses, redirects, restrictions, retries, timeouts, history, report validation, CLI behavior, sitemap formats, nested indexes, gzip, cycles, and discovery bounds. `pnpm build` checks the package's ESM, CommonJS, and declaration output.
+
+`pnpm test:e2e` starts the docs at `127.0.0.1:4175` and runs Chromium, Firefox, and WebKit tests for the report viewer and Sitemap parser. Parser coverage includes file import and drag-and-drop, namespaces and CDATA, duplicates and invalid URLs, filtering and export, pagination, malformed XML, input limits, index references without network requests, and the English mobile layout. HTML reports are saved without automatically opening a server after failures.
 
 Before release, inspect `pnpm --filter meodp pack` to confirm that the CLI and built declarations are included and workspace apps/tests/docs are excluded. For documentation changes, build and preview both languages, exercise search and language switching, and inspect desktop and mobile navigation. Browser checks do not establish the availability of arbitrary external sites.
 :::
