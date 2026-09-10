@@ -2,7 +2,7 @@ import type { DefaultTheme } from 'vitepress'
 import process from 'node:process'
 import { defineConfig } from 'vitepress'
 
-const repository = 'https://github.com/YunYouJun/mystic-eyes-of-death-perception'
+const repository = 'https://github.com/YunYouJun/meodp'
 const base = process.env.DOCS_BASE || '/'
 
 function navigation(prefix: string, chinese: boolean): DefaultTheme.Config {

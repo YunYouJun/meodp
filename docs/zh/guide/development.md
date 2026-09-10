@@ -52,7 +52,7 @@ pnpm exec meodp --help
 默认部署前缀为 `/`。部署到仓库子路径时，指定目标前缀构建：
 
 ```bash
-DOCS_BASE=/mystic-eyes-of-death-perception/ pnpm docs:build
+DOCS_BASE=/meodp/ pnpm docs:build
 ```
 
 通过托管流程上传生成目录即可。构建文档或提交代码不会自动部署站点。
@@ -63,13 +63,13 @@ DOCS_BASE=/mystic-eyes-of-death-perception/ pnpm docs:build
 
 在 [npm 包设置](https://www.npmjs.com/package/meodp/access) 中添加 GitHub Actions Trusted Publisher：
 
-| 字段                 | 值                                                          |
-| -------------------- | ----------------------------------------------------------- |
-| Organization or user | `YunYouJun`                                                 |
-| Repository           | GitHub 当前仓库名，目前为 `mystic-eyes-of-death-perception` |
-| Workflow filename    | `release.yml`                                               |
-| Environment          | 留空，工作流未使用 GitHub environment                       |
-| Allowed actions      | 启用 `npm publish` 直接发布                                 |
+| 字段                 | 值                                    |
+| -------------------- | ------------------------------------- |
+| Organization or user | `YunYouJun`                           |
+| Repository           | GitHub 当前仓库名，目前为 `meodp`     |
+| Workflow filename    | `release.yml`                         |
+| Environment          | 留空，工作流未使用 GitHub environment |
+| Allowed actions      | 启用 `npm publish` 直接发布           |
 
 工作流使用 GitHub 托管 runner、Node.js 24、npm 11.5.1+ 和 `id-token: write`，不需要 `NPM_TOKEN` secret。公开仓库发布公开包时，npm 自动生成 provenance。配置前需先将工作流文件推送到 GitHub。仓库改名后，应使用新名称重新建立 Trusted Publisher，并更新包的 repository 信息，详见 [npm Trusted Publishing 文档](https://docs.npmjs.com/trusted-publishers/)。
 

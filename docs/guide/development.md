@@ -52,7 +52,7 @@ The site includes local search and build-time dead-link checks. Its output is `d
 The default base is `/`. For hosting below a repository path, build with the desired prefix:
 
 ```bash
-DOCS_BASE=/mystic-eyes-of-death-perception/ pnpm docs:build
+DOCS_BASE=/meodp/ pnpm docs:build
 ```
 
 Upload the generated directory through your hosting workflow. Building documentation or committing changes does not deploy the site.
@@ -63,13 +63,13 @@ The `release.yml` workflow publishes only `packages/meodp` when a GitHub Release
 
 Configure a GitHub Actions trusted publisher in the [npm package settings](https://www.npmjs.com/package/meodp/access):
 
-| Field                | Value                                                                           |
-| -------------------- | ------------------------------------------------------------------------------- |
-| Organization or user | `YunYouJun`                                                                     |
-| Repository           | The current GitHub repository name, currently `mystic-eyes-of-death-perception` |
-| Workflow filename    | `release.yml`                                                                   |
-| Environment          | Leave empty; the workflow does not use a GitHub environment                     |
-| Allowed actions      | Enable direct publishing with `npm publish`                                     |
+| Field                | Value                                                       |
+| -------------------- | ----------------------------------------------------------- |
+| Organization or user | `YunYouJun`                                                 |
+| Repository           | The current GitHub repository name, currently `meodp`       |
+| Workflow filename    | `release.yml`                                               |
+| Environment          | Leave empty; the workflow does not use a GitHub environment |
+| Allowed actions      | Enable direct publishing with `npm publish`                 |
 
 The workflow uses a GitHub-hosted runner, Node.js 24, npm 11.5.1+, and `id-token: write`. It needs no `NPM_TOKEN` secret; npm generates provenance automatically for public repositories and packages. The workflow file must exist on GitHub before configuring trust. If the repository is renamed, recreate the trusted publisher with the new name and update package repository metadata. See [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/).
 

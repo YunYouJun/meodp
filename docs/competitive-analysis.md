@@ -12,7 +12,7 @@ README 提出的“脚本配置、SDK、回调、日志”已经有现成工具�
 
 ## 之前做过什么
 
-改造前仓库核查只找到 [README 的 lychee 参考与差异说明](https://github.com/YunYouJun/mystic-eyes-of-death-perception/blob/d28c957831831ebe7b1b67def1607061882c434e/README.md)，未找到此前独立、系统的竞品分析交付物。该说明是项目动机，尚不能作为市场空缺的证据。
+改造前仓库核查只找到 [README 的 lychee 参考与差异说明](https://github.com/YunYouJun/meodp/blob/d28c957831831ebe7b1b67def1607061882c434e/README.md)，未找到此前独立、系统的竞品分析交付物。该说明是项目动机，尚不能作为市场空缺的证据。
 
 项目已有 [Playwright 页面与资源检查](../packages/meodp/src/core/check/site.ts)、[网络事件采集](../packages/meodp/src/core/utils/assets.ts)、本地记录及 Markdown 输出；但 [前端首页](../apps/client/src/pages/index.vue) 仍是模板，[检查入口](../packages/meodp/src/core/check/index.ts) 的 sitemap 分支调用尚被注释，且 [CLI](../packages/meodp/src/cli/index.ts) 在运行结束后固定 `process.exit(0)`，不能直接视为可靠的 CI 失败门禁。当前更接近待完善的工具原型，不能把配置类型或 TODO 当作已经可用的功能。
 

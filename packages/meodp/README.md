@@ -4,7 +4,7 @@ Check website and friend-link availability from Node.js or the command line. Bui
 
 Requires **Node.js 22.19+**. The `meodp/check` entry, `meodp check`, and `meodp sitemap` commands do not require Playwright or a browser installation.
 
-Guides: [English](https://github.com/YunYouJun/mystic-eyes-of-death-perception/blob/main/docs/guide/quick-start.md) · [简体中文](https://github.com/YunYouJun/mystic-eyes-of-death-perception/blob/main/docs/zh/guide/quick-start.md). The repository's VitePress site includes API/CLI references and workspace development instructions in both languages.
+Guides: [English](https://github.com/YunYouJun/meodp/blob/main/docs/guide/quick-start.md) · [简体中文](https://github.com/YunYouJun/meodp/blob/main/docs/zh/guide/quick-start.md). The repository's VitePress site includes API/CLI references and workspace development instructions in both languages.
 
 ## Install
 
@@ -221,4 +221,4 @@ The viewer source lives in `packages/meodp/src/check/viewer/` in the repository.
 
 Tests use local HTTP servers for redirects, restricted access, transient failures, timeouts, history, report output, CLI exit policies, and sitemap discovery (indexes, gzip, namespaces, cycles, limits, and partial failures). They do not scan external sites. Library type checking and declaration generation use the package's `tsconfig.json`, independently of the experimental client template.
 
-See [competitive analysis](https://github.com/YunYouJun/mystic-eyes-of-death-perception/blob/main/docs/competitive-analysis.md) for the project scope and alternatives.
+See [competitive analysis](https://github.com/YunYouJun/meodp/blob/main/docs/competitive-analysis.md) for the project scope and alternatives.

@@ -6,7 +6,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/YunYouJun/mystic-eyes-of-death-perception.git",
+    "url": "git+https://github.com/YunYouJun/meodp.git",
     "directory": "packages/meodp"
   },
   "keywords": [
