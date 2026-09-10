@@ -61,3 +61,5 @@ jobs:
         run: pnpm build
       - name: Verify workspace CLI
         run: pnpm exec meodp --help
+      - name: Build bilingual documentation
+        run: pnpm docs:build

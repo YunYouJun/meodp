@@ -4,6 +4,8 @@ Check website and friend-link availability from Node.js or the command line. Bui
 
 Requires **Node.js 22.19+**. The `meodp/check` entry, `meodp check`, and `meodp sitemap` commands do not require Playwright or a browser installation.
 
+Guides: [English](https://github.com/YunYouJun/mystic-eyes-of-death-perception/blob/main/docs/guide/quick-start.md) · [简体中文](https://github.com/YunYouJun/mystic-eyes-of-death-perception/blob/main/docs/zh/guide/quick-start.md). The repository's VitePress site includes API/CLI references and workspace development instructions in both languages.
+
 ## Install
 
 ```bash

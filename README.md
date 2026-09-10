@@ -28,7 +28,7 @@ pnpm exec meodp report reports/pages/report.json --output reports/site
 
 `check` and `sitemap` make HTTP requests; `report` renders saved results without scanning. Running `meodp` with no arguments shows help. The optional legacy browser scanner uses `meodp scan` and its existing configuration.
 
-Full usage and result semantics are in the [package README](packages/meodp/README.md).
+Documentation: [English](docs/guide/quick-start.md) · [简体中文](docs/zh/guide/quick-start.md). Full usage and result semantics are also in the [package README](packages/meodp/README.md).
 
 ## Workspace
 
@@ -37,7 +37,7 @@ The workspace layout follows [starter-monorepo](https://github.com/YunYouJun/sta
 ```text
 packages/meodp/   Published SDK, CLI, report viewer, and tests
 apps/client/      Existing experimental Vitesse client
-docs/            Documentation and research notes
+docs/            Bilingual VitePress documentation and research notes
 examples/app/    Consumer linked to meodp through workspace:*
 ```
 
@@ -51,11 +51,13 @@ pnpm test
 pnpm typecheck
 pnpm lint
 pnpm build
+pnpm docs:build
+pnpm docs:dev
 pnpm exec meodp --help
 pnpm --filter meodp pack
 ```
 
-`pnpm build`, `pnpm test`, and `pnpm typecheck` target the published package. Start the experimental client explicitly with `pnpm dev:client`. `pnpm demo` runs the legacy browser scanner against `examples/app/meodp.config.ts`; install Playwright browsers before using it.
+`pnpm build` and `pnpm test` target the published package; `pnpm typecheck` checks the package and docs configuration. `pnpm docs:dev` starts the bilingual documentation at `127.0.0.1`; `pnpm docs:preview` previews its built output. See the [development guide](docs/guide/development.md) for workspace commands and deployment base paths. Start the experimental client explicitly with `pnpm dev:client`. `pnpm demo` runs the legacy browser scanner against `examples/app/meodp.config.ts`; install Playwright browsers before using it.
 
 For source-level CLI development, use `pnpm --filter meodp exec tsx bin/index.ts --help`. Shared Git hooks and lint rules live at the workspace root. Release commands target the `meodp` package; the workspace root cannot be published.
 

@@ -1,0 +1,17 @@
+{
+  "name": "@meodp/docs",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vitepress dev --host 127.0.0.1",
+    "build": "vitepress build",
+    "preview": "vitepress preview --host 127.0.0.1",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "typescript": "^5.6.3",
+    "vitepress": "^1.6.4",
+    "vue": "^3.5.12"
+  }
+}
