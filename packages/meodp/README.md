@@ -1,10 +1,14 @@
 # MEODP (Mystic Eyes of Death Perception)
 
+[![npm version](https://img.shields.io/npm/v/meodp)](https://www.npmjs.com/package/meodp)
+
+[English](https://yunyoujun.github.io/meodp/) | [简体中文](https://yunyoujun.github.io/meodp/zh/)
+
 Check website and friend-link availability from Node.js or the command line. Built on [linkinator](https://github.com/JustinBeckwith/linkinator), with interactive HTML, JSON, and Markdown reports and optional history across runs.
 
 Requires **Node.js 22.19+**. The `meodp/check` entry, `meodp check`, and `meodp sitemap` commands do not require Playwright or a browser installation.
 
-Guides: [English](https://github.com/YunYouJun/meodp/blob/main/docs/guide/quick-start.md) · [简体中文](https://github.com/YunYouJun/meodp/blob/main/docs/zh/guide/quick-start.md). The repository's VitePress site includes API/CLI references and workspace development instructions in both languages.
+Guides: [English](https://yunyoujun.github.io/meodp/guide/quick-start.html) · [简体中文](https://yunyoujun.github.io/meodp/zh/guide/quick-start.html). The repository's VitePress site includes API/CLI references and workspace development instructions in both languages.
 
 ## Install
 

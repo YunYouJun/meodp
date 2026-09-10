@@ -3,6 +3,20 @@
   "type": "module",
   "private": true,
   "packageManager": "pnpm@9.12.3",
+  "description": "Check website and friend-link availability with sitemap discovery, history, and portable reports.",
+  "author": {
+    "name": "YunYouJun",
+    "url": "https://www.yunyoujun.cn"
+  },
+  "license": "MIT",
+  "homepage": "https://yunyoujun.github.io/meodp/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YunYouJun/meodp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/YunYouJun/meodp/issues"
+  },
   "engines": {
     "node": ">=22.19.0"
   },
@@ -21,7 +35,8 @@
     "lint": "eslint .",
     "typecheck": "pnpm --filter meodp --filter @meodp/docs -r typecheck",
     "release": "pnpm --filter meodp release",
-    "prepare": "simple-git-hooks"
+    "prepare": "simple-git-hooks",
+    "ci": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:e2e && pnpm docs:build"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.8.0",

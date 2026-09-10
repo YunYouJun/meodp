@@ -2,16 +2,28 @@
   "name": "meodp",
   "type": "module",
   "version": "0.1.0",
-  "description": "Check website and friend-link availability with structured results, history, and reports.",
+  "description": "Check website and friend-link availability with sitemap discovery, history, and portable reports.",
+  "author": {
+    "name": "YunYouJun",
+    "url": "https://www.yunyoujun.cn"
+  },
   "license": "MIT",
+  "homepage": "https://yunyoujun.github.io/meodp/",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/YunYouJun/meodp.git",
     "directory": "packages/meodp"
   },
+  "bugs": {
+    "url": "https://github.com/YunYouJun/meodp/issues"
+  },
   "keywords": [
     "meodp",
-    "check"
+    "link-checker",
+    "broken-links",
+    "sitemap",
+    "friend-links",
+    "cli"
   ],
   "exports": {
     ".": {
@@ -47,7 +59,7 @@
     "build": "tsx scripts/build-report-viewer.ts && unbuild",
     "dev": "tsx scripts/build-report-viewer.ts && unbuild --stub",
     "test": "tsx scripts/build-report-viewer.ts && tsx --test test/check.test.ts test/sitemap.test.ts",
-    "test:e2e": "pnpm exec playwright test",
+    "test:e2e": "tsx scripts/build-report-viewer.ts && playwright test",
     "typecheck": "tsx scripts/build-report-viewer.ts && tsc --noEmit -p tsconfig.json",
     "prepack": "npm run build",
     "release": "npm version --no-git-tag-version"
@@ -94,5 +106,9 @@
     "tsx": "^4.19.2",
     "unbuild": "^2.0.0",
     "vite-node": "^2.1.4"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

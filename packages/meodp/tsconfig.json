@@ -11,6 +11,8 @@
     "bin/index.ts",
     "test/check.test.ts",
     "test/sitemap.test.ts",
+    "tests/**/*.ts",
+    "playwright.config.ts",
     "scripts/**/*.ts"
   ]
 }

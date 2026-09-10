@@ -55,7 +55,7 @@ The default base is `/`. For hosting below a repository path, build with the des
 DOCS_BASE=/meodp/ pnpm docs:build
 ```
 
-Upload the generated directory through your hosting workflow. Building documentation or committing changes does not deploy the site.
+The [public documentation](https://yunyoujun.github.io/meodp/) is deployed by `docs.yml` on pushes to `main`, using `/meodp/` as its base. GitHub Pages must use GitHub Actions as its publishing source. Local builds and local commits do not deploy the site.
 
 ## Release to npm
 

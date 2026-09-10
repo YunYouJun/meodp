@@ -55,7 +55,7 @@ pnpm exec meodp --help
 DOCS_BASE=/meodp/ pnpm docs:build
 ```
 
-通过托管流程上传生成目录即可。构建文档或提交代码不会自动部署站点。
+[公开文档](https://yunyoujun.github.io/meodp/zh/) 由 `docs.yml` 在推送 `main` 后部署，使用 `/meodp/` 前缀。GitHub Pages 的发布来源需设为 GitHub Actions。本地构建或本地提交不会部署站点。
 
 ## 发布到 npm
 
