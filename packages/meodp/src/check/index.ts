@@ -3,4 +3,6 @@ export { formatReport, readReport, saveReport, writeReports, writeReportSite } f
 export { parseReport } from './schema'
 export { checkSitemap, readSitemapUrls } from './sitemap'
 export type { Availability, CheckOptions, CheckReport, FailureReason, LinkObservation, LinkTarget, SitemapOptions } from './types'
+export { waitForReport } from './verify'
+export type { ReportVerificationOptions } from './verify'
 export type { ReportSiteOptions } from './viewer/html'

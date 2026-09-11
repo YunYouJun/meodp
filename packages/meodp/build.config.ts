@@ -9,6 +9,11 @@ export default defineBuildConfig({
     'src/cli/main',
     'src/check/index',
     'src/check/cli',
+    'src/config/index',
+    'src/notify/index',
+    'src/notify/feishu',
+    'src/notify/email',
+    'src/notify/cli',
   ],
 
   // Generates .d.ts declaration file
@@ -18,6 +23,7 @@ export default defineBuildConfig({
   externals: [
     ...Object.keys(pkg.dependencies || {}),
     'playwright',
+    'nodemailer',
   ],
 
   rollup: {

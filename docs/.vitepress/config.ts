@@ -17,6 +17,7 @@ function navigation(prefix: string, chinese: boolean): DefaultTheme.Config {
       text: chinese ? '使用 MEODP' : 'Using MEODP',
       items: [
         { text: chinese ? '快速开始' : 'Quick start', link: `${prefix}/guide/quick-start` },
+        { text: chinese ? '项目配置与通知' : 'Configuration and notifications', link: `${prefix}/guide/configuration` },
         { text: chinese ? 'Sitemap 子页面检测' : 'Sitemap page checks', link: `${prefix}/guide/sitemap` },
         { text: chinese ? '报告与历史' : 'Reports and history', link: `${prefix}/guide/reports` },
         { text: chinese ? '命令行参考' : 'CLI reference', link: `${prefix}/reference/cli` },

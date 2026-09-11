@@ -9,11 +9,15 @@ meodp check links.yml --output reports/links
 meodp sitemap https://example.com/sitemap.xml --output reports/pages
 meodp sitemap https://example.com/ --discover
 meodp report reports/pages/report.json --output reports/site
+meodp check --config meodp.config.ts
+meodp notify --channel feishu --mode changes --dry-run
 ```
+
+All HTTP commands support `--config`. An `input` in configuration replaces the required positional. `notify` reads saved reports to render or deliver notifications. See [configuration and notifications](../guide/configuration).
 
 `check` accepts exactly one local `.json`, `.yml`, or `.yaml` file containing an array of URL strings or objects with `url` and optional `name`. It does not fetch remote input files. `sitemap` accepts exactly one HTTP(S) URL. Both make network requests and write reports after completion.
 
-`report [report.json]` accepts at most one local report. Without one, it exports an empty viewer. Its options are `--output` (default `reports/site`) and `--data-url` (HTTP(S) or relative JSON URL loaded by the hosted viewer). Exporting does not check sites or fetch the data URL. See [reports](../guide/reports).
+`report [report.json]` accepts at most one local report. Without one in either the CLI or config, it exports an empty viewer. Its options are `--output` (default `reports/site`) and `--data-url` (HTTP(S) or relative JSON URL loaded by the hosted viewer). Exporting does not check sites or fetch the data URL. See [reports](../guide/reports).
 
 ## Check and sitemap options
 
@@ -46,7 +50,7 @@ These codes apply to `check` and `sitemap`:
 meodp sitemap https://example.com/sitemap.xml --fail-on review --observer ci
 ```
 
-`report` exits with `0` after export or `2` on invalid input/execution failure.
+`report` exits with `0` after export or successful `--verify`, and `2` on invalid input/execution failure. `notify` returns `0` when sent, previewed, or skipped, and `2` on configuration/delivery errors.
 
 ## Legacy browser commands
 

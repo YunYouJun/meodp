@@ -38,6 +38,31 @@ pnpm exec meodp report reports/pages/report.json --output reports/site
 
 Documentation: [English](docs/guide/quick-start.md) · [简体中文](docs/zh/guide/quick-start.md). Full usage and result semantics are also in the [package README](packages/meodp/README.md).
 
+## Project configuration
+
+Starting with 0.2.0, HTTP commands read `meodp.config.ts`:
+
+```ts
+import { defineConfig } from 'meodp/config'
+
+export default defineConfig({
+  check: {
+    input: 'public/links.yml',
+    output: 'reports/links',
+    site: 'reports/site',
+    history: '.cache/links.json',
+    failOn: 'none',
+  },
+  report: { input: 'reports/links/report.json', output: 'dist/status' },
+})
+```
+
+Run `meodp check` to collect observations or `meodp report` to render saved data. CLI options override config values. Config file paths are relative to the config; CLI paths are relative to your working directory.
+
+The same config supports history seeding, deployment verification (`meodp report --verify`), and optional Feishu / SMTP notifications (`meodp notify`). Reuse the pure policy from `meodp/notify` and delivery adapters from `meodp/notify/feishu` or `meodp/notify/email`. Email requires the optional Nodemailer peer only for sending. Notification channels default to off; use `--mode changes|weekly` to enable and `--dry-run` to preview.
+
+See the [configuration guide](https://yunyoujun.github.io/meodp/guide/configuration) ([中文](https://yunyoujun.github.io/meodp/zh/guide/configuration)). The older browser `defineConfig` at the package root remains unchanged; HTTP projects import from `meodp/config`.
+
 ## Workspace
 
 The workspace layout follows [starter-monorepo](https://github.com/YunYouJun/starter-monorepo). Only `packages/meodp` is published; the root, docs, client, and examples are private.

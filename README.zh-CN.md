@@ -38,6 +38,29 @@ pnpm exec meodp report reports/pages/report.json --output reports/site
 
 访问受限不等于站点失效；检测结果只代表当前网络环境。返回 200 也不能证明页面内容正常，详见[报告与历史](https://yunyoujun.github.io/meodp/zh/guide/reports.html)。
 
+## 项目配置
+
+从 0.2.0 开始，HTTP 命令可通过 `meodp.config.ts` 集中配置：
+
+```ts
+import { defineConfig } from 'meodp/config'
+
+export default defineConfig({
+  check: {
+    input: 'public/links.yml',
+    output: 'reports/links',
+    site: 'reports/site',
+    history: '.cache/links.json',
+    failOn: 'none',
+  },
+  report: { input: 'reports/links/report.json', output: 'dist/status' },
+})
+```
+
+执行 `meodp check` 检测，`meodp report` 渲染已有报告。命令行参数优先于配置，配置内的文件路径相对配置文件解析。
+
+同一配置还支持历史恢复、部署验证和飞书 / SMTP 通知。通用策略通过 `meodp/notify` 复用，卡片及投递使用 `meodp/notify/feishu`、`meodp/notify/email`。通知通道默认关闭，使用 `--mode changes|weekly` 启用、`--dry-run` 预览。完整示例见[项目配置与通知](docs/zh/guide/configuration.md)。
+
 ## 工作区
 
 参考 [starter-monorepo](https://github.com/YunYouJun/starter-monorepo) 划分模块，只有 `packages/meodp` 用于 npm 发布，其余工作区包保持 private。
