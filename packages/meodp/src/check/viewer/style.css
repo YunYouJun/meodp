@@ -77,6 +77,7 @@ header {
   padding: 14px 24px;
   margin: auto;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
@@ -88,7 +89,23 @@ header {
 }
 .actions {
   display: flex;
+  align-items: center;
   gap: 12px;
+  margin-left: auto;
+}
+.github-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  color: var(--muted);
+}
+.github-link:hover {
+  background: #f1f6ff;
+  color: var(--blue);
 }
 main {
   max-width: 1248px;
