@@ -45,9 +45,85 @@ await saveReport(report, history)
 
 历史文件保存本次集合，不会累积所有旧记录。多次失败属于独立观测，不能据此认定两次检测之间持续宕机。
 
+## 选择报告格式 {#reporters}
+
+从 0.2.0 开始，在 `meodp.config.ts` 中通过 `reporter` 选择 JSON、Markdown 和 HTML。名称 / 元组配置参考 [Playwright](https://playwright.dev/docs/test-reporters#multiple-reporters)，可重复的 `--reporter` 参数也与 [Vitest](https://vitest.dev/guide/reporters#combining-reporters) 一致。
+
+```ts
+import { defineConfig } from 'meodp/config'
+
+const reportFile = 'reports/data.json'
+
+export default defineConfig({
+  check: {
+    input: 'links.yml',
+    reporter: [
+      ['json', { outputFile: reportFile }],
+      ['markdown', { outputFile: 'reports/summary.md' }],
+    ],
+  },
+  report: {
+    input: reportFile,
+    reporter: [['html', { outputFolder: 'dist/status' }]],
+  },
+})
+```
+
+`reporter` 描述**输出方式**，`report` 是 **`meodp report` 命令的配置区**。上例先运行 `meodp check` 写入 JSON 和 Markdown，再运行 `meodp report` 读取这份 JSON 导出 HTML；导出过程不会重新检测站点。
+
+| 配置              | 职责                               |
+| ----------------- | ---------------------------------- |
+| `check.reporter`  | 本次检测生成的格式与目标路径       |
+| `report.input`    | `meodp report` 要读取的已有 JSON   |
+| `report.reporter` | 读取 JSON 后生成的格式与目标路径   |
+| 顶层 `reporter`   | 未单独配置的命令共用的默认输出格式 |
+
+示例用 `reportFile` 复用路径，因为一个命令负责写、另一个负责读。输入保持显式：检测可能输出多份 JSON 或完全不输出 JSON，导出也可能读取另一次运行下载的报告。只需要检测的项目可以省略整个 `report` 配置区。
+
+支持单个名称 `reporter: 'json'`、名称数组 `reporter: ['json', 'markdown']`，也支持混合名称和元组。元组需放在外层数组中。`reporter: []` 关闭这些 reporter，检测、单独配置的历史保存和显式设置的兼容选项 `site` 仍会执行。
+
+```bash
+meodp check links.yml --reporter=json,markdown,html --output reports/check
+meodp sitemap https://example.com/sitemap.xml --reporter=json
+meodp report reports/data.json --reporter=markdown --output reports/export
+meodp report reports/data.json --reporter=json --reporter=html
+```
+
+| Reporter   | 输出目录中的默认产物         | 元组选项                                                        |
+| ---------- | ---------------------------- | --------------------------------------------------------------- |
+| `json`     | `report.json`                | `outputFile`                                                    |
+| `markdown` | `report.md`                  | `outputFile`                                                    |
+| `html`     | `index.html` + `report.json` | `outputFolder`，或用 `outputFile` 导出单个 HTML；可选 `dataUrl` |
+
+HTML 目录内嵌快照，托管时会加载同目录 JSON。单文件 HTML 内嵌数据，无须额外 JSON，也可通过 `dataUrl` 加载托管数据。没有输入时，HTML 生成空查看器，JSON 和 Markdown 则要求提供报告。所有 reporter 都写入文件，不自动打开浏览器；目前支持上述内置格式与内置 HTML 查看器。
+
+选择优先级：CLI `--reporter` → 命令配置（`check.reporter`、`sitemap.reporter`、`report.reporter`）→ 顶层 `reporter` → 命令默认值。覆盖会替换整个列表及其元组选项。因此，同一项目可以在检测时生成多种格式，在构建状态页时只导出 HTML：
+
+```ts
+import { defineConfig } from 'meodp/config'
+
+export default defineConfig({
+  reporter: ['json', 'markdown', 'html'],
+  check: { input: 'links.yml', output: 'reports/check' },
+  report: {
+    input: 'reports/check/report.json',
+    reporter: 'html',
+    output: 'dist/status',
+  },
+})
+```
+
+元组中的 `outputFile` / `outputFolder` 相对配置文件解析，优先于默认目录。`--output` 覆盖命令的 `output`，只作用于没有显式路径的 reporter；CLI 路径相对当前工作目录。若要重定向全部产物，同时指定 `--reporter` 和 `--output`。`--data-url` 覆盖全部 HTML 的数据源；未传时，HTML 元组选项优先于 `report.dataUrl`。
+
+未设置 reporter 时，检测仍生成下方三个文件，`report` 仍导出静态站点。默认目录保持为检测的 `reports/meodp` 和导出的 `reports/site`。格式、选项或输出路径冲突会在检测或写入前报错；JSON 与 HTML 可以共用内容相同的 `report.json`。减少格式不会删除以前生成的文件，需要干净产物时使用新目录。历史保存与通知输入仍独立需要 JSON 数据。
+
+CLI 会拒绝覆盖友链输入文件的输出，也会拒绝用 Markdown / HTML 覆盖输入报告或历史 JSON；将报告 JSON 重新导出为 JSON 则允许。兼容选项 `site` 也参与相同的输出路径校验，新配置建议统一使用 HTML reporter 元组。
+
+库调用可用 `meodp/check` 的 `writeReporters(report, reporter, { outputDir?, cwd?, dataUrl? })`，接收相同配置并返回 `{ reporter, files }[]`。仅 HTML 模板可省略报告。已有 `formatReport()`、`writeReports()`、`writeReportSite()` 行为保持兼容。
+
 ## 查看与分享报告
 
-`check` 和 `sitemap` 会在 `--output` 目录写入三个文件：
+未选择 reporter 时，`check` 和 `sitemap` 会在 `--output` 目录写入三个文件：
 
 | 文件          | 用途                                              |
 | ------------- | ------------------------------------------------- |

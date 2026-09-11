@@ -9,7 +9,7 @@ export default antfu({
     'no-console': 'off',
   },
 }, {
-  files: ['packages/meodp/test/check.test.ts', 'packages/meodp/test/sitemap.test.ts'],
+  files: ['packages/meodp/test/**/*.ts'],
   rules: {
     'test/no-import-node-test': 'off',
   },

@@ -45,9 +45,85 @@ A missing history file starts a new history. Malformed data or a different `obse
 
 History contains the current collection, not an append-only archive. Failed runs are separate observations and do not establish continuous downtime between runs.
 
+## Select reporters {#reporters}
+
+Starting with 0.2.0, use `reporter` in `meodp.config.ts` to select JSON, Markdown, and HTML output. The name / tuple configuration follows [Playwright](https://playwright.dev/docs/test-reporters#multiple-reporters); repeatable `--reporter` flags also follow [Vitest](https://vitest.dev/guide/reporters#combining-reporters).
+
+```ts
+import { defineConfig } from 'meodp/config'
+
+const reportFile = 'reports/data.json'
+
+export default defineConfig({
+  check: {
+    input: 'links.yml',
+    reporter: [
+      ['json', { outputFile: reportFile }],
+      ['markdown', { outputFile: 'reports/summary.md' }],
+    ],
+  },
+  report: {
+    input: reportFile,
+    reporter: [['html', { outputFolder: 'dist/status' }]],
+  },
+})
+```
+
+`reporter` describes **output**, while `report` configures the **`meodp report` command**. Run `meodp check` to write JSON and Markdown, then `meodp report` to read that JSON and export HTML. The second command never checks sites again.
+
+| Setting              | Role                                                     |
+| -------------------- | -------------------------------------------------------- |
+| `check.reporter`     | Formats and destinations produced by a fresh check       |
+| `report.input`       | Saved JSON read by `meodp report`                        |
+| `report.reporter`    | Formats and destinations produced from that saved JSON   |
+| Top-level `reporter` | Shared defaults for commands without their own selection |
+
+The example reuses `reportFile` because one command writes it and another reads it. The input is explicit: a check may write several JSON files or none, and an export may read a downloaded report from another run. A check-only project does not need a `report` section.
+
+A single name (`reporter: 'json'`), names (`reporter: ['json', 'markdown']`), and mixed names / tuples are supported. Wrap tuples in the outer array. `reporter: []` disables those reporters; checks, separately configured history, and an explicit legacy `site` export still run.
+
+```bash
+meodp check links.yml --reporter=json,markdown,html --output reports/check
+meodp sitemap https://example.com/sitemap.xml --reporter=json
+meodp report reports/data.json --reporter=markdown --output reports/export
+meodp report reports/data.json --reporter=json --reporter=html
+```
+
+| Reporter   | Default output under the output directory | Tuple options                                                                  |
+| ---------- | ----------------------------------------- | ------------------------------------------------------------------------------ |
+| `json`     | `report.json`                             | `outputFile`                                                                   |
+| `markdown` | `report.md`                               | `outputFile`                                                                   |
+| `html`     | `index.html` + `report.json`              | `outputFolder`, or `outputFile` for a standalone HTML file; optional `dataUrl` |
+
+HTML folders embed a snapshot and load the sidecar when hosted. A standalone HTML file embeds its snapshot without needing a sidecar; `dataUrl` can opt into hosted data loading. HTML without input produces an empty viewer; JSON and Markdown require a report. All reporters write files, and none launches a browser. Only these built-in reporters and the built-in HTML viewer are supported.
+
+Selection precedence is CLI `--reporter` → command section (`check.reporter`, `sitemap.reporter`, `report.reporter`) → top-level `reporter` → command defaults. The selection replaces the whole list, including tuple options. Thus the same project can generate several formats after checking and export only HTML while building its status page:
+
+```ts
+import { defineConfig } from 'meodp/config'
+
+export default defineConfig({
+  reporter: ['json', 'markdown', 'html'],
+  check: { input: 'links.yml', output: 'reports/check' },
+  report: {
+    input: 'reports/check/report.json',
+    reporter: 'html',
+    output: 'dist/status',
+  },
+})
+```
+
+Explicit tuple `outputFile` / `outputFolder` paths are relative to the config file and take precedence over the default directory. `--output` overrides the command's `output` directory for reporters without explicit paths; CLI paths are relative to the working directory. To redirect all outputs, supply both `--reporter` and `--output`. `--data-url` overrides all HTML data URLs; otherwise each HTML tuple overrides `report.dataUrl`.
+
+Without any reporter selection, checks retain the three files below and `report` retains its static site export. Default output directories remain `reports/meodp` for checks and `reports/site` for `report`. Invalid reporters/options and overlapping output paths fail before a scan or any report writes. JSON and HTML may share `report.json` because both write the same data. Selecting fewer formats leaves old files in place; use a fresh directory for a clean export. History and notification inputs require JSON independently of the selected artifacts.
+
+The CLI rejects outputs that would overwrite the link input file, or replace a saved input/history JSON with Markdown or HTML. Rewriting report JSON as JSON is allowed. The legacy `site` option participates in the same output-path validation; prefer HTML reporter tuples for new configurations.
+
+For library use, `writeReporters(report, reporter, { outputDir?, cwd?, dataUrl? })` from `meodp/check` accepts the same selection and returns `{ reporter, files }[]`. Omit the report only for HTML templates. `formatReport()`, `writeReports()`, and `writeReportSite()` remain available with their existing behavior.
+
 ## Open or share a report
 
-`check` and `sitemap` write three files to `--output`:
+Without a reporter selection, `check` and `sitemap` write three files to `--output`:
 
 | File          | Use                                                           |
 | ------------- | ------------------------------------------------------------- |

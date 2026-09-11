@@ -6,7 +6,8 @@ const help = `Usage: meodp <command> [options]
 Commands:
   check <links.json|links.yml>  Request listed HTTP(S) URLs and write fresh reports
   sitemap <sitemap-url>        Check pages listed in an XML sitemap or nested index
-  report [report.json]         Export a static viewer from saved data; no site checks
+  report [report.json]         Render saved data using JSON, Markdown or HTML reporters
+  notify                      Send configured report notifications; supports --dry-run
   scan [root]                 Run the legacy browser scanner using meodp.config.ts
   export [root]               Export a legacy browser-scan report
 
@@ -18,6 +19,7 @@ Examples:
   meodp check links.yml --output reports/links
   meodp sitemap https://example.com/sitemap.xml --output reports/pages
   meodp report reports/links/report.json --output reports/site
+  meodp report reports/links/report.json --reporter json,markdown,html
   meodp check --help
   meodp help report
 
@@ -44,9 +46,13 @@ export async function runCli(args = process.argv.slice(2)): Promise<number> {
     if (command === 'help') {
       if (!rest.length)
         return runCli(['--help'])
-      if (rest.length !== 1 || !['check', 'sitemap', 'report', 'scan', 'export'].includes(rest[0]))
-        throw new Error('Use meodp help <check|sitemap|report|scan|export>')
+      if (rest.length !== 1 || !['check', 'sitemap', 'report', 'notify', 'scan', 'export'].includes(rest[0]))
+        throw new Error('Use meodp help <check|sitemap|report|notify|scan|export>')
       return runCli([rest[0], '--help'])
+    }
+    if (command === 'notify') {
+      const { runNotifyCli } = await import('../notify/cli')
+      return runNotifyCli(rest)
     }
     if (command === 'check') {
       const { runCheckCli } = await import('../check/cli')

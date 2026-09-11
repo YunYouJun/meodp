@@ -38,6 +38,31 @@ pnpm exec meodp report reports/pages/report.json --output reports/site
 
 访问受限不等于站点失效；检测结果只代表当前网络环境。返回 200 也不能证明页面内容正常，详见[报告与历史](https://yunyoujun.github.io/meodp/zh/guide/reports.html)。
 
+## 项目配置
+
+从 0.2.0 开始，HTTP 命令可通过 `meodp.config.ts` 集中配置：
+
+```ts
+import { defineConfig } from 'meodp/config'
+
+export default defineConfig({
+  check: {
+    reporter: ['json', 'markdown', ['html', { outputFolder: 'reports/site' }]],
+    input: 'public/links.yml',
+    output: 'reports/links',
+    history: '.cache/links.json',
+    failOn: 'none',
+  },
+  report: { input: 'reports/links/report.json', reporter: 'html', output: 'dist/status' },
+})
+```
+
+执行 `meodp check` 检测，`meodp report` 渲染已有报告。`check.reporter` 指定检测产物，`report.input` 指定要读取的 JSON，`report.reporter` 指定导出格式；顶层 `reporter` 仅用于共享默认格式。命令行参数优先于配置，配置内的文件路径相对配置文件解析。
+
+同一配置还支持历史恢复、部署验证和飞书 / SMTP 通知。通用策略通过 `meodp/notify` 复用，卡片及投递使用 `meodp/notify/feishu`、`meodp/notify/email`。通知通道默认关闭，使用 `--mode changes|weekly` 启用、`--dry-run` 预览。完整示例见[项目配置与通知](docs/zh/guide/configuration.md)。
+
+使用 `--reporter=json,markdown,html` 或重复的 `--reporter` 覆盖格式。JSON / Markdown 元组支持 `outputFile`，HTML 支持 `outputFolder` 或单文件 `outputFile`。格式与路径优先级详见[报告指南](docs/zh/guide/reports.md#reporters)。
+
 ## 工作区
 
 参考 [starter-monorepo](https://github.com/YunYouJun/starter-monorepo) 划分模块，只有 `packages/meodp` 用于 npm 发布，其余工作区包保持 private。

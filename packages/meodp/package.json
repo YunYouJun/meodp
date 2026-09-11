@@ -1,7 +1,7 @@
 {
   "name": "meodp",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Check website and friend-link availability with sitemap discovery, history, and portable reports.",
   "author": {
     "name": "YunYouJun",
@@ -40,6 +40,46 @@
         "types": "./dist/check/index.d.cts",
         "default": "./dist/check/index.cjs"
       }
+    },
+    "./config": {
+      "import": {
+        "types": "./dist/config/index.d.mts",
+        "default": "./dist/config/index.mjs"
+      },
+      "require": {
+        "types": "./dist/config/index.d.cts",
+        "default": "./dist/config/index.cjs"
+      }
+    },
+    "./notify": {
+      "import": {
+        "types": "./dist/notify/index.d.mts",
+        "default": "./dist/notify/index.mjs"
+      },
+      "require": {
+        "types": "./dist/notify/index.d.cts",
+        "default": "./dist/notify/index.cjs"
+      }
+    },
+    "./notify/feishu": {
+      "import": {
+        "types": "./dist/notify/feishu.d.mts",
+        "default": "./dist/notify/feishu.mjs"
+      },
+      "require": {
+        "types": "./dist/notify/feishu.d.cts",
+        "default": "./dist/notify/feishu.cjs"
+      }
+    },
+    "./notify/email": {
+      "import": {
+        "types": "./dist/notify/email.d.mts",
+        "default": "./dist/notify/email.mjs"
+      },
+      "require": {
+        "types": "./dist/notify/email.d.cts",
+        "default": "./dist/notify/email.cjs"
+      }
     }
   },
   "main": "./dist/index.mjs",
@@ -58,17 +98,21 @@
   "scripts": {
     "build": "tsx scripts/build-report-viewer.ts && unbuild",
     "dev": "tsx scripts/build-report-viewer.ts && unbuild --stub",
-    "test": "tsx scripts/build-report-viewer.ts && tsx --test test/check.test.ts test/sitemap.test.ts",
+    "test": "tsx scripts/build-report-viewer.ts && tsx --test test/*.test.ts",
     "test:e2e": "tsx scripts/build-report-viewer.ts && playwright test",
     "typecheck": "tsx scripts/build-report-viewer.ts && tsc --noEmit -p tsconfig.json",
     "prepack": "npm run build",
     "release": "npm version --no-git-tag-version"
   },
   "peerDependencies": {
+    "nodemailer": "^10.0.3",
     "playwright": "^1",
     "typescript": "^5.0.0"
   },
   "peerDependenciesMeta": {
+    "nodemailer": {
+      "optional": true
+    },
     "playwright": {
       "optional": true
     },
@@ -99,9 +143,11 @@
     "@types/fs-extra": "^11.0.4",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.9.0",
+    "@types/nodemailer": "^8.0.1",
     "@types/yargs": "^17.0.33",
     "cilicili": "^0.1.1",
     "esbuild": "^0.28.2",
+    "nodemailer": "^10.0.3",
     "playwright": "^1.48.2",
     "tsx": "^4.19.2",
     "unbuild": "^2.0.0",

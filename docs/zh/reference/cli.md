@@ -9,11 +9,18 @@ meodp check links.yml --output reports/links
 meodp sitemap https://example.com/sitemap.xml --output reports/pages
 meodp sitemap https://example.com/ --discover
 meodp report reports/pages/report.json --output reports/site
+meodp report reports/pages/report.json --reporter=json,markdown,html
+meodp check --config meodp.config.ts
+meodp notify --channel feishu --mode changes --dry-run
 ```
+
+所有 HTTP 命令支持 `--config`，配置包含 `input` 时可省略位置参数。`notify` 读取已有报告生成或投递通知。详见[项目配置与通知](../guide/configuration)。
 
 `check` 接收一个本地 `.json`、`.yml` 或 `.yaml` 文件，内容为 URL 字符串或带 `url`、可选 `name` 的对象数组，不会下载远程输入文件。`sitemap` 接收一个 HTTP(S) URL。两者都会发出网络请求，并在检测完成后生成报告。
 
-`report [report.json]` 最多接收一个本地报告，不传时生成空查看器。支持 `--output`（默认 `reports/site`）和 `--data-url`（托管查看器加载的 HTTP(S) 或相对 JSON URL）。导出操作不会检查站点或请求数据 URL，详见[报告指南](../guide/reports)。
+`report [report.json]` 最多接收一个本地报告，不传且配置未提供输入时，默认 HTML 生成空查看器。支持 `--output`（默认 `reports/site`）和 `--data-url`（托管查看器加载的 HTTP(S) 或相对 JSON URL）。导出操作不会检查站点或请求数据 URL，详见[报告指南](../guide/reports)。
+
+`check`、`sitemap`、`report` 都支持 `--reporter`，如 `--reporter=json,markdown` 或 `--reporter=json --reporter=html`。它替换配置中的整个 reporter 列表。JSON / Markdown 需要输入报告；HTML 支持空查看器。`--output` 设置默认目录，显式元组路径优先；完整规则见[报告格式](../guide/reports#reporters)。
 
 ## check 与 sitemap 通用选项
 
@@ -46,7 +53,7 @@ Sitemap 还支持 `--discover`、`--max-urls`、`--max-sitemaps`、`--max-sitema
 meodp sitemap https://example.com/sitemap.xml --fail-on review --observer ci
 ```
 
-`report` 导出成功返回 `0`，输入或执行失败返回 `2`。
+`report` 导出或 `--verify` 验证成功返回 `0`，输入或执行失败返回 `2`。`notify` 发送、预览或跳过返回 `0`，配置或投递错误返回 `2`。
 
 ## 旧版浏览器命令
 
