@@ -61,6 +61,8 @@ await writeReportSite(undefined, 'reports/viewer', { dataUrl: './latest.json' })
 
 `meodp/config` exports `defineConfig` and configuration types; `meodp/notify` exports the pure `createNotification` function. Use `meodp/notify/feishu` for cards and delivery, or `meodp/notify/email` for mail. `waitForReport(report, { url, attempts?, delayMs? })` from `meodp/check` verifies published JSON and viewer availability. See [configuration and notifications](../guide/configuration) for options, policies, and examples.
 
+`writeReporters(report, reporter, options?)` selects JSON, Markdown, or HTML files/sites through names and tuples, returning `{ reporter, files }[]`. `ReporterConfig` and related types are exported from `meodp/check`. See [reporter options](../guide/reports#reporters).
+
 ## Exported data types
 
 The following declarations are included directly from the package source so their fields stay aligned with the implementation.

@@ -46,14 +46,14 @@ Starting with 0.2.0, HTTP commands read `meodp.config.ts`:
 import { defineConfig } from 'meodp/config'
 
 export default defineConfig({
+  reporter: ['json', 'markdown', ['html', { outputFolder: 'reports/site' }]],
   check: {
     input: 'public/links.yml',
     output: 'reports/links',
-    site: 'reports/site',
     history: '.cache/links.json',
     failOn: 'none',
   },
-  report: { input: 'reports/links/report.json', output: 'dist/status' },
+  report: { input: 'reports/links/report.json', reporter: 'html', output: 'dist/status' },
 })
 ```
 
@@ -62,6 +62,8 @@ Run `meodp check` to collect observations or `meodp report` to render saved data
 The same config supports history seeding, deployment verification (`meodp report --verify`), and optional Feishu / SMTP notifications (`meodp notify`). Reuse the pure policy from `meodp/notify` and delivery adapters from `meodp/notify/feishu` or `meodp/notify/email`. Email requires the optional Nodemailer peer only for sending. Notification channels default to off; use `--mode changes|weekly` to enable and `--dry-run` to preview.
 
 See the [configuration guide](https://yunyoujun.github.io/meodp/guide/configuration) ([中文](https://yunyoujun.github.io/meodp/zh/guide/configuration)). The older browser `defineConfig` at the package root remains unchanged; HTTP projects import from `meodp/config`.
+
+Override formats with `--reporter=json,markdown,html` or repeated `--reporter` flags. JSON / Markdown tuples accept `outputFile`; HTML accepts `outputFolder` or a standalone `outputFile`. See [reporter formats and path precedence](https://yunyoujun.github.io/meodp/guide/reports#reporters).
 
 ## Workspace
 

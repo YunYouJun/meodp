@@ -60,14 +60,14 @@ Starting with 0.2.0, HTTP commands read `meodp.config.ts`:
 import { defineConfig } from 'meodp/config'
 
 export default defineConfig({
+  reporter: ['json', 'markdown', ['html', { outputFolder: 'reports/site' }]],
   check: {
     input: 'public/links.yml',
     output: 'reports/links',
-    site: 'reports/site',
     history: '.cache/links.json',
     failOn: 'none',
   },
-  report: { input: 'reports/links/report.json', output: 'dist/status' },
+  report: { input: 'reports/links/report.json', reporter: 'html', output: 'dist/status' },
 })
 ```
 
@@ -76,6 +76,8 @@ Run `meodp check` to collect observations or `meodp report` to render saved data
 The same config supports history seeding, deployment verification (`meodp report --verify`), and optional Feishu / SMTP notifications (`meodp notify`). Reuse the pure policy from `meodp/notify` and delivery adapters from `meodp/notify/feishu` or `meodp/notify/email`. Email requires the optional Nodemailer peer only for sending. Notification channels default to off; use `--mode changes|weekly` to enable and `--dry-run` to preview.
 
 See the [configuration guide](https://yunyoujun.github.io/meodp/guide/configuration) ([中文](https://yunyoujun.github.io/meodp/zh/guide/configuration)). The older browser `defineConfig` at the package root remains unchanged; HTTP projects import from `meodp/config`.
+
+Override formats with `--reporter=json,markdown,html` or repeated `--reporter` flags. JSON / Markdown tuples accept `outputFile`; HTML accepts `outputFolder` or a standalone `outputFile`. See [reporter formats and path precedence](https://yunyoujun.github.io/meodp/guide/reports#reporters).
 
 ## Sitemap page checks
 
@@ -127,7 +129,7 @@ Use explicit subcommands to distinguish a fresh network check from rendering sav
 | Command        | Input                            | Behavior                                                       |
 | -------------- | -------------------------------- | -------------------------------------------------------------- |
 | `meodp check`  | URL array in JSON/YAML           | Request sites and write fresh HTML, Markdown, and JSON reports |
-| `meodp report` | Saved `report.json`, or no input | Export a static report viewer; no site-check requests          |
+| `meodp report` | Saved `report.json`, or no input | Render JSON, Markdown or HTML; no site-check requests          |
 | `meodp scan`   | Legacy config directory          | Run the experimental Playwright scanner                        |
 
 `meodp`, `meodp --help`, and `meodp help` display the command overview. Use `meodp check -h` or `meodp help report` for details; `meodp --version` / `-v` prints the version. Unknown commands exit with code `2` instead of starting a scan. Help and version do not require Playwright.

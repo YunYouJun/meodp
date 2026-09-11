@@ -61,6 +61,8 @@ await writeReportSite(undefined, 'reports/viewer', { dataUrl: './latest.json' })
 
 `meodp/config` 导出 `defineConfig` 与配置类型；`meodp/notify` 导出纯函数 `createNotification`。飞书卡片和投递通过 `meodp/notify/feishu`，邮件投递通过 `meodp/notify/email`。`meodp/check` 的 `waitForReport(report, { url, attempts?, delayMs? })` 验证公开 JSON 与查看器是否已部署。完整选项、策略与示例详见[项目配置与通知](../guide/configuration)。
 
+`writeReporters(report, reporter, options?)` 接收名称 / 元组配置，选择输出 JSON、Markdown、HTML 文件或站点，返回 `{ reporter, files }[]`。相关 `ReporterConfig` 等类型也从 `meodp/check` 导出。详见[报告格式](../guide/reports#reporters)。
+
 ## 导出的数据类型
 
 以下声明直接引入包内源码，避免文档字段与实现不同步。

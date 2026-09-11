@@ -9,6 +9,7 @@ meodp check links.yml --output reports/links
 meodp sitemap https://example.com/sitemap.xml --output reports/pages
 meodp sitemap https://example.com/ --discover
 meodp report reports/pages/report.json --output reports/site
+meodp report reports/pages/report.json --reporter=json,markdown,html
 meodp check --config meodp.config.ts
 meodp notify --channel feishu --mode changes --dry-run
 ```
@@ -17,7 +18,9 @@ All HTTP commands support `--config`. An `input` in configuration replaces the r
 
 `check` accepts exactly one local `.json`, `.yml`, or `.yaml` file containing an array of URL strings or objects with `url` and optional `name`. It does not fetch remote input files. `sitemap` accepts exactly one HTTP(S) URL. Both make network requests and write reports after completion.
 
-`report [report.json]` accepts at most one local report. Without one in either the CLI or config, it exports an empty viewer. Its options are `--output` (default `reports/site`) and `--data-url` (HTTP(S) or relative JSON URL loaded by the hosted viewer). Exporting does not check sites or fetch the data URL. See [reports](../guide/reports).
+`report [report.json]` accepts at most one local report. Without one in either the CLI or config, the default HTML reporter exports an empty viewer. Its options are `--output` (default `reports/site`) and `--data-url` (HTTP(S) or relative JSON URL loaded by the hosted viewer). Exporting does not check sites or fetch the data URL. See [reports](../guide/reports).
+
+`check`, `sitemap`, and `report` support `--reporter`, for example `--reporter=json,markdown` or `--reporter=json --reporter=html`. It replaces the configured reporter list. JSON / Markdown require input data; HTML supports empty viewers. `--output` sets the default directory; explicit tuple paths take precedence. See [reporters](../guide/reports#reporters).
 
 ## Check and sitemap options
 

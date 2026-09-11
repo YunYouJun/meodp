@@ -1,3 +1,4 @@
+import type { ReporterConfig, ReporterName } from './reporters'
 import type { CheckOptions } from './types'
 import { readFile } from 'node:fs/promises'
 import { hostname } from 'node:os'
@@ -9,6 +10,7 @@ import { loadProjectConfig } from '../config/load'
 import { checkLinks } from './check'
 import { normalizeTargets } from './input'
 import { readReport, saveReport, writeReports, writeReportSite } from './report'
+import { planReporters, writeReporters } from './reporters'
 import { checkSitemap } from './sitemap'
 import { waitForReport } from './verify'
 
@@ -19,7 +21,9 @@ Input: an array of URL strings or objects with url and optional name.
 This makes network requests. To render saved data instead, use meodp report.
 
   --config <file>      Load a project config (default: meodp.config.ts)
-  --output <directory>  Write report.json, report.md, report.html (default: reports/meodp)
+  --output <directory>  Default report directory (default: reports/meodp)
+  --reporter <names>    json, markdown, html; comma-separated or repeated
+                       Without a selection, write report.json, report.md, report.html
   --history <file>      Read previous observations and save the completed report
   --observer <name>     Identify this network/environment (default: hostname)
   --concurrency <n>     Concurrent sites (default: 5)
@@ -48,6 +52,7 @@ async function runScanCli(mode: 'links' | 'sitemap', args: string[]): Promise<nu
       allowPositionals: true,
       options: {
         'config': { type: 'string' },
+        'reporter': { type: 'string', multiple: true },
         'output': { type: 'string' },
         'history': { type: 'string' },
         'observer': { type: 'string' },
@@ -86,6 +91,11 @@ ${help.slice(help.indexOf('  --config'))}`)
     const input = positionals[0] ?? (configured.input ? (mode === 'links' ? project.path(configured.input) : configured.input) : undefined)
     if (!input || positionals.length > 1)
       throw new Error(`Provide exactly one ${mode === 'links' ? 'JSON or YAML input file' : 'HTTP(S) URL'}. Use --help for examples.`)
+    const reporter = selectReporters(values.reporter, configured.reporter ?? project.config.reporter)
+    const outputDir = resolve(values.output ?? (configured.output ? project.path(configured.output) : 'reports/meodp'))
+    const reporterOptions = { outputDir, cwd: project.path('.') }
+    if (reporter !== undefined)
+      planReporters(reporter, reporterOptions)
     const failOn = values['fail-on'] ?? configured.failOn ?? 'unavailable'
     if (!['none', 'unavailable', 'review'].includes(failOn))
       throw new Error('--fail-on must be none, unavailable, or review')
@@ -118,14 +128,21 @@ ${help.slice(help.indexOf('  --config'))}`)
         maxSitemapBytes: numeric(values['max-sitemap-bytes']) ?? configured.maxSitemapBytes,
       })
       : await checkLinks(await readTargets(input), options)
-    const paths = await writeReports(report, values.output ?? (configured.output ? project.path(configured.output) : 'reports/meodp'))
+    if (reporter === undefined) {
+      const paths = await writeReports(report, outputDir)
+      console.log(`Interactive report: ${resolve(paths.html)}`)
+      console.log(`Reports: ${resolve(paths.markdown)} and ${resolve(paths.json)}`)
+    }
+    else {
+      const outputs = await writeReporters(report, reporter, reporterOptions)
+      for (const output of outputs)
+        console.log(`${output.reporter}: ${output.files.join(', ')}`)
+    }
     if (configured.site)
       await writeReportSite(report, project.path(configured.site))
     if (history)
       await saveReport(report, history)
     console.log(`${report.summary.total} URLs: ${report.summary.reachable} reachable, ${report.summary.restricted} restricted, ${report.summary.unavailable} unavailable`)
-    console.log(`Interactive report: ${resolve(paths.html)}`)
-    console.log(`Reports: ${resolve(paths.markdown)} and ${resolve(paths.json)}`)
     if (failOn === 'none')
       return 0
     const findings = report.summary.unavailable > 0
@@ -153,6 +170,7 @@ export async function runReportCli(args = process.argv.slice(3)): Promise<number
       allowPositionals: true,
       options: {
         'config': { type: 'string' },
+        'reporter': { type: 'string', multiple: true },
         'verify': { type: 'boolean' },
         'output': { type: 'string' },
         'data-url': { type: 'string' },
@@ -160,12 +178,14 @@ export async function runReportCli(args = process.argv.slice(3)): Promise<number
       },
     })
     if (values.help) {
-      console.log(`Usage: meodp report [report.json] [--output reports/site] [--data-url ./report.json]
+      console.log(`Usage: meodp report [report.json] [--reporter json,markdown,html] [--output reports/site]
 
-Export a static interactive viewer without making any site-check requests.
+Render saved data through selected reporters without making any site-check requests.
+--reporter accepts json, markdown, html; repeat it or separate names with commas.
+With no configured selection, export the HTML static viewer.
 With an input report, write index.html and report.json. The hosted viewer loads
 report.json on each visit; opening index.html as a local file uses its embedded snapshot.
-Without input, export an empty viewer supporting file upload and JSON URL loading.
+Without input, only HTML is available: an empty viewer with file upload and URL loading.
 --config loads a project config; CLI arguments override config values.
 --verify waits for report.verify.url to serve this report and the matching viewer.
 --data-url overrides the data source loaded by the hosted viewer (cross-origin needs CORS).
@@ -181,6 +201,7 @@ Exit codes: 0 = exported; 2 = invalid input or execution error.`)
     const report = input ? await readReport(input) : undefined
     if (input && !report)
       throw new Error(`Report not found: ${input}`)
+    const reporter = selectReporters(values.reporter, configured.reporter ?? project.config.reporter) ?? 'html'
     if (values.verify) {
       if (!report || !configured.verify)
         throw new Error('Verification requires a saved report and report.verify.url in the config.')
@@ -188,12 +209,33 @@ Exit codes: 0 = exported; 2 = invalid input or execution error.`)
       console.log('The public status page is serving the expected report.')
       return 0
     }
-    const paths = await writeReportSite(report, values.output ?? (configured.output ? project.path(configured.output) : 'reports/site'), { dataUrl: values['data-url'] ?? configured.dataUrl })
-    console.log(`Static report site: ${resolve(paths.index)}`)
+    const selected = values['data-url'] === undefined
+      ? reporter
+      : (typeof reporter === 'string' ? [reporter] : reporter).map((entry) => {
+          const [name, options] = typeof entry === 'string' ? [entry] : entry
+          return name === 'html' ? ['html', { ...options, dataUrl: values['data-url'] }] as const : entry
+        })
+    const outputs = await writeReporters(report, selected, {
+      cwd: project.path('.'),
+      outputDir: resolve(values.output ?? (configured.output ? project.path(configured.output) : 'reports/site')),
+      dataUrl: values['data-url'] ?? configured.dataUrl,
+    })
+    for (const output of outputs)
+      console.log(`${output.reporter}: ${output.files.join(', ')}`)
     return 0
   }
   catch (error) {
     console.error(`meodp report: ${error instanceof Error ? error.message : String(error)}`)
     return 2
   }
+}
+
+function selectReporters(cli: string[] | undefined, configured?: ReporterConfig): ReporterConfig | undefined {
+  if (cli === undefined)
+    return configured
+  // A CLI selection replaces configured tuples, including their output paths.
+  const names = [...new Set(cli.flatMap(value => value.split(',').map(name => name.trim())))]
+  if (names.some(name => !['json', 'markdown', 'html'].includes(name)))
+    throw new TypeError('--reporter must select json, markdown, or html.')
+  return names as ReporterName[]
 }

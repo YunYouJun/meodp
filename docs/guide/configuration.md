@@ -8,15 +8,16 @@ import process from 'node:process'
 import { defineConfig } from 'meodp/config'
 
 export default defineConfig({
+  reporter: ['json', 'markdown', ['html', { outputFolder: 'reports/site' }]],
   check: {
     input: 'public/links.yml',
     output: 'reports/links',
-    site: 'reports/site',
     history: '.cache/links.json',
     observer: 'ci',
     failOn: 'none',
   },
   report: {
+    reporter: 'html',
     input: 'public/status/report.json',
     output: 'dist/status',
     verify: { url: 'https://example.com/status/report.json' },
@@ -58,6 +59,8 @@ meodp notify --channel feishu --mode changes --dry-run
 - The existing browser scanner's `defineConfig` from `meodp` retains its legacy shape. Use the separate `meodp/config` entry for these HTTP commands.
 
 `check` accepts the [HTTP check options](../reference/api#check-options), with `history` replacing the in-memory `previousReport`. `sitemap` additionally accepts discovery options such as `discover` and `maxUrls`. `site` optionally writes a portable static viewer after the check; `report` renders existing data independently.
+
+Select formats with top-level or command-specific `reporter`, using names or `[name, options]` tuples. CLI `--reporter` accepts comma-separated or repeated names. See [reporter formats and precedence](./reports#reporters).
 
 ## History and deployment
 
