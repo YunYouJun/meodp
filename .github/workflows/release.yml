@@ -51,6 +51,8 @@ jobs:
         run: pnpm test
       - name: Typecheck package
         run: pnpm --filter meodp typecheck
+      - name: Verify installable package and production dependencies
+        run: pnpm --filter meodp verify:package
       - name: Publish meodp with OIDC
         working-directory: packages/meodp
         env:

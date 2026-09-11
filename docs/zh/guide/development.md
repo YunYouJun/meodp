@@ -59,6 +59,8 @@ DOCS_BASE=/meodp/ pnpm docs:build
 
 ## 发布到 npm
 
+发布前执行 `pnpm --filter meodp verify:package`，构建并将 npm tarball 安装到临时消费项目，在不安装可选浏览器和邮件客户端的情况下检查 ESM / CommonJS 公开入口及配置驱动的 CLI。生产依赖审计存在 high / critical 告警时会失败。此步骤在 CI 和 npm 发布前执行，需要访问 registry。
+
 `release.yml` 只在 GitHub Release **正式发布**时发布 `packages/meodp`，普通 push 和草稿 Release 不会触发。Release tag 必须等于 `v` 加包版本号。稳定版本使用 npm 的 `latest` 标签；例如 `0.2.0-beta.1` 必须对应 GitHub 预发布，并使用 `next` 标签。
 
 在 [npm 包设置](https://www.npmjs.com/package/meodp/access) 中添加 GitHub Actions Trusted Publisher：
