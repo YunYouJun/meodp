@@ -52,18 +52,35 @@ await saveReport(report, history)
 ```ts
 import { defineConfig } from 'meodp/config'
 
+const reportFile = 'reports/data.json'
+
 export default defineConfig({
-  reporter: [
-    ['json', { outputFile: 'reports/data.json' }],
-    ['markdown', { outputFile: 'reports/summary.md' }],
-    ['html', { outputFolder: 'reports/site' }],
-  ],
-  check: { input: 'links.yml' },
-  report: { input: 'reports/data.json' },
+  check: {
+    input: 'links.yml',
+    reporter: [
+      ['json', { outputFile: reportFile }],
+      ['markdown', { outputFile: 'reports/summary.md' }],
+    ],
+  },
+  report: {
+    input: reportFile,
+    reporter: [['html', { outputFolder: 'dist/status' }]],
+  },
 })
 ```
 
-支持单个名称 `reporter: 'json'`、名称数组 `reporter: ['json', 'markdown']`，也支持混合名称和元组。元组需放在外层数组中。`reporter: []` 关闭报告文件输出，检测和单独配置的历史保存仍会执行。
+`reporter` 描述**输出方式**，`report` 是 **`meodp report` 命令的配置区**。上例先运行 `meodp check` 写入 JSON 和 Markdown，再运行 `meodp report` 读取这份 JSON 导出 HTML；导出过程不会重新检测站点。
+
+| 配置              | 职责                               |
+| ----------------- | ---------------------------------- |
+| `check.reporter`  | 本次检测生成的格式与目标路径       |
+| `report.input`    | `meodp report` 要读取的已有 JSON   |
+| `report.reporter` | 读取 JSON 后生成的格式与目标路径   |
+| 顶层 `reporter`   | 未单独配置的命令共用的默认输出格式 |
+
+示例用 `reportFile` 复用路径，因为一个命令负责写、另一个负责读。输入保持显式：检测可能输出多份 JSON 或完全不输出 JSON，导出也可能读取另一次运行下载的报告。只需要检测的项目可以省略整个 `report` 配置区。
+
+支持单个名称 `reporter: 'json'`、名称数组 `reporter: ['json', 'markdown']`，也支持混合名称和元组。元组需放在外层数组中。`reporter: []` 关闭这些 reporter，检测、单独配置的历史保存和显式设置的兼容选项 `site` 仍会执行。
 
 ```bash
 meodp check links.yml --reporter=json,markdown,html --output reports/check
@@ -99,6 +116,8 @@ export default defineConfig({
 元组中的 `outputFile` / `outputFolder` 相对配置文件解析，优先于默认目录。`--output` 覆盖命令的 `output`，只作用于没有显式路径的 reporter；CLI 路径相对当前工作目录。若要重定向全部产物，同时指定 `--reporter` 和 `--output`。`--data-url` 覆盖全部 HTML 的数据源；未传时，HTML 元组选项优先于 `report.dataUrl`。
 
 未设置 reporter 时，检测仍生成下方三个文件，`report` 仍导出静态站点。默认目录保持为检测的 `reports/meodp` 和导出的 `reports/site`。格式、选项或输出路径冲突会在检测或写入前报错；JSON 与 HTML 可以共用内容相同的 `report.json`。减少格式不会删除以前生成的文件，需要干净产物时使用新目录。历史保存与通知输入仍独立需要 JSON 数据。
+
+CLI 会拒绝覆盖友链输入文件的输出，也会拒绝用 Markdown / HTML 覆盖输入报告或历史 JSON；将报告 JSON 重新导出为 JSON 则允许。兼容选项 `site` 也参与相同的输出路径校验，新配置建议统一使用 HTML reporter 元组。
 
 库调用可用 `meodp/check` 的 `writeReporters(report, reporter, { outputDir?, cwd?, dataUrl? })`，接收相同配置并返回 `{ reporter, files }[]`。仅 HTML 模板可省略报告。已有 `formatReport()`、`writeReports()`、`writeReportSite()` 行为保持兼容。
 

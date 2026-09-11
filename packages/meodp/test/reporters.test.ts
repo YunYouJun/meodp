@@ -161,3 +161,46 @@ test('scan reporter validation runs before HTTP requests; selections preserve hi
   await assert.rejects(run(['check']), executionError)
   assert.equal(requests, 3)
 })
+
+test('report rejects non-JSON outputs that overwrite its input before writing other artifacts', async (t) => {
+  const { directory, run } = await fixture(t)
+  await saveReport(snapshot, join(directory, 'input.json'))
+  await writeFile(join(directory, 'meodp.config.ts'), `export default { report: {
+    input: 'input.json', reporter: [['json', { outputFile: 'other.json' }], ['markdown', { outputFile: './input.json' }]]
+  } }`)
+  await assert.rejects(run(['report']), executionError)
+  assert.deepEqual(await readReport(join(directory, 'input.json')), snapshot)
+  assert.equal(await readReport(join(directory, 'other.json')), undefined)
+  // Re-emitting the same JSON is supported by both the default HTML folder and JSON reporter.
+  await writeFile(join(directory, 'meodp.config.ts'), `export default { report: { input: 'input.json', reporter: [['json', { outputFile: 'input.json' }]] } }`)
+  await run(['report'])
+  assert.deepEqual(await readReport(join(directory, 'input.json')), snapshot)
+})
+
+test('scan protects its input and JSON history and checks legacy site collisions before HTTP', async (t) => {
+  let requests = 0
+  const server = createServer((_request, response) => {
+    requests++
+    response.writeHead(200).end()
+  })
+  await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve))
+  t.after(() => new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve())))
+  const address = server.address()
+  assert.ok(address && typeof address !== 'string')
+  const { directory, run } = await fixture(t)
+  const links = JSON.stringify([`http://127.0.0.1:${address.port}/`])
+  await writeFile(join(directory, 'links.json'), links)
+  await saveReport(snapshot, join(directory, 'history.json'))
+  for (const config of [
+    `reporter: [['json', { outputFile: 'links.json' }]]`,
+    `reporter: [], history: './links.json'`,
+    `reporter: [['markdown', { outputFile: 'history.json' }]], history: 'history.json'`,
+    `reporter: [['html', { outputFile: 'site/report.json' }]], site: 'site'`,
+  ]) {
+    await writeFile(join(directory, 'meodp.config.ts'), `export default { check: { input: 'links.json', failOn: 'none', observerMismatch: 'reset', ${config} } }`)
+    await assert.rejects(run(['check']), executionError)
+    assert.equal(requests, 0)
+    assert.equal(await readFile(join(directory, 'links.json'), 'utf8'), links)
+    assert.deepEqual(await readReport(join(directory, 'history.json')), snapshot)
+  }
+})

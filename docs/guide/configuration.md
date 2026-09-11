@@ -8,8 +8,8 @@ import process from 'node:process'
 import { defineConfig } from 'meodp/config'
 
 export default defineConfig({
-  reporter: ['json', 'markdown', ['html', { outputFolder: 'reports/site' }]],
   check: {
+    reporter: ['json', 'markdown', ['html', { outputFolder: 'reports/site' }]],
     input: 'public/links.yml',
     output: 'reports/links',
     history: '.cache/links.json',
@@ -60,7 +60,7 @@ meodp notify --channel feishu --mode changes --dry-run
 
 `check` accepts the [HTTP check options](../reference/api#check-options), with `history` replacing the in-memory `previousReport`. `sitemap` additionally accepts discovery options such as `discover` and `maxUrls`. `site` optionally writes a portable static viewer after the check; `report` renders existing data independently.
 
-Select formats with top-level or command-specific `reporter`, using names or `[name, options]` tuples. CLI `--reporter` accepts comma-separated or repeated names. See [reporter formats and precedence](./reports#reporters).
+`report.input` is the saved JSON read by `meodp report`; `report.reporter` selects what that command writes. The example reads the published snapshot, which your CI saves separately after checking. For a direct check → export flow, point `report.input` to `reports/links/report.json`. Select formats with top-level or command-specific `reporter`, using names or `[name, options]` tuples. CLI `--reporter` accepts comma-separated or repeated names. See [reporter formats and precedence](./reports#reporters).
 
 ## History and deployment
 

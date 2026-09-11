@@ -8,8 +8,8 @@ import process from 'node:process'
 import { defineConfig } from 'meodp/config'
 
 export default defineConfig({
-  reporter: ['json', 'markdown', ['html', { outputFolder: 'reports/site' }]],
   check: {
+    reporter: ['json', 'markdown', ['html', { outputFolder: 'reports/site' }]],
     input: 'public/links.yml',
     output: 'reports/links',
     history: '.cache/links.json',
@@ -60,7 +60,7 @@ meodp notify --channel feishu --mode changes --dry-run
 
 `check` 接收 [HTTP 检测选项](../reference/api#check-options)，以 `history` 文件替代内存中的 `previousReport`。`sitemap` 还支持 `discover`、`maxUrls` 等发现选项。`site` 可在检测完成后额外生成静态查看器；`report` 独立读取已有数据生成站点。
 
-通过顶层 `reporter` 或各命令的 `reporter` 选择输出格式，支持名称与 `[名称, 选项]` 元组。CLI 使用 `--reporter`，支持逗号分隔或重复传参；格式、路径选项和优先级详见[报告格式](./reports#reporters)。
+`report.input` 是 `meodp report` 读取的已有 JSON，`report.reporter` 是该命令的输出方式。上例读取发布快照，需由 CI 在检测完成后单独保存；若要直接串联检测与导出，将 `report.input` 设为 `reports/links/report.json`。通过顶层 `reporter` 或各命令的 `reporter` 选择输出格式，支持名称与 `[名称, 选项]` 元组。CLI 使用 `--reporter`，支持逗号分隔或重复传参；格式、路径选项和优先级详见[报告格式](./reports#reporters)。
 
 ## 历史与部署
 

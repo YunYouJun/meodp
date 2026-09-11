@@ -60,8 +60,8 @@ Starting with 0.2.0, HTTP commands read `meodp.config.ts`:
 import { defineConfig } from 'meodp/config'
 
 export default defineConfig({
-  reporter: ['json', 'markdown', ['html', { outputFolder: 'reports/site' }]],
   check: {
+    reporter: ['json', 'markdown', ['html', { outputFolder: 'reports/site' }]],
     input: 'public/links.yml',
     output: 'reports/links',
     history: '.cache/links.json',
@@ -71,7 +71,7 @@ export default defineConfig({
 })
 ```
 
-Run `meodp check` to collect observations or `meodp report` to render saved data. CLI options override config values. Config file paths are relative to the config; CLI paths are relative to your working directory.
+Run `meodp check` to collect observations or `meodp report` to render saved data. `check.reporter` selects check outputs; `report.input` is the saved JSON to read, and `report.reporter` selects export formats. Use top-level `reporter` only for shared defaults. CLI options override config values. Config file paths are relative to the config; CLI paths are relative to your working directory.
 
 The same config supports history seeding, deployment verification (`meodp report --verify`), and optional Feishu / SMTP notifications (`meodp notify`). Reuse the pure policy from `meodp/notify` and delivery adapters from `meodp/notify/feishu` or `meodp/notify/email`. Email requires the optional Nodemailer peer only for sending. Notification channels default to off; use `--mode changes|weekly` to enable and `--dry-run` to preview.
 

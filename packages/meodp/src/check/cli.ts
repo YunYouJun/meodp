@@ -1,15 +1,15 @@
-import type { ReporterConfig, ReporterName } from './reporters'
+import type { ReporterConfig, ReporterDescription, ReporterName } from './reporters'
 import type { CheckOptions } from './types'
-import { readFile } from 'node:fs/promises'
+import { readFile, realpath } from 'node:fs/promises'
 import { hostname } from 'node:os'
-import { extname, resolve } from 'node:path'
+import { extname, join, resolve } from 'node:path'
 import process from 'node:process'
 import { parseArgs } from 'node:util'
 import { load } from 'js-yaml'
 import { loadProjectConfig } from '../config/load'
 import { checkLinks } from './check'
 import { normalizeTargets } from './input'
-import { readReport, saveReport, writeReports, writeReportSite } from './report'
+import { readReport, saveReport } from './report'
 import { planReporters, writeReporters } from './reporters'
 import { checkSitemap } from './sitemap'
 import { waitForReport } from './verify'
@@ -91,19 +91,28 @@ ${help.slice(help.indexOf('  --config'))}`)
     const input = positionals[0] ?? (configured.input ? (mode === 'links' ? project.path(configured.input) : configured.input) : undefined)
     if (!input || positionals.length > 1)
       throw new Error(`Provide exactly one ${mode === 'links' ? 'JSON or YAML input file' : 'HTTP(S) URL'}. Use --help for examples.`)
-    const reporter = selectReporters(values.reporter, configured.reporter ?? project.config.reporter)
+    const selection = selectReporters(values.reporter, configured.reporter ?? project.config.reporter)
     const outputDir = resolve(values.output ?? (configured.output ? project.path(configured.output) : 'reports/meodp'))
     const reporterOptions = { outputDir, cwd: project.path('.') }
-    if (reporter !== undefined)
-      planReporters(reporter, reporterOptions)
+    const reporter: ReporterDescription[] = typeof selection === 'string'
+      ? [selection]
+      : [...(selection ?? ['json', 'markdown', ['html', { outputFile: join(outputDir, 'report.html') }]])]
+    if (configured.site)
+      reporter.push(['html', { outputFolder: project.path(configured.site) }])
+    const plan = planReporters(reporter, reporterOptions)
     const failOn = values['fail-on'] ?? configured.failOn ?? 'unavailable'
     if (!['none', 'unavailable', 'review'].includes(failOn))
       throw new Error('--fail-on must be none, unavailable, or review')
     const numeric = (value: string | boolean | undefined) => typeof value === 'string' ? Number(value) : undefined
     const history = values.history ?? (configured.history ? project.path(configured.history) : undefined)
+    const seed = configured.historySeed ? project.path(configured.historySeed) : undefined
+    await protectInputs(plan, [
+      ...(mode === 'links' ? [{ file: input, jsonOnly: false }] : []),
+      ...[history, seed].filter((file): file is string => !!file).map(file => ({ file, jsonOnly: true })),
+    ], history)
     let previousReport = history ? await readReport(history) : undefined
-    if (!previousReport && configured.historySeed)
-      previousReport = await readReport(project.path(configured.historySeed))
+    if (!previousReport && seed)
+      previousReport = await readReport(seed)
     const observer = values.observer ?? configured.observer
     // Explicit project policy permits a new network baseline; the core stays strict.
     if (previousReport && configured.observerMismatch === 'reset' && previousReport.observer !== (observer ?? hostname()))
@@ -128,18 +137,9 @@ ${help.slice(help.indexOf('  --config'))}`)
         maxSitemapBytes: numeric(values['max-sitemap-bytes']) ?? configured.maxSitemapBytes,
       })
       : await checkLinks(await readTargets(input), options)
-    if (reporter === undefined) {
-      const paths = await writeReports(report, outputDir)
-      console.log(`Interactive report: ${resolve(paths.html)}`)
-      console.log(`Reports: ${resolve(paths.markdown)} and ${resolve(paths.json)}`)
-    }
-    else {
-      const outputs = await writeReporters(report, reporter, reporterOptions)
-      for (const output of outputs)
-        console.log(`${output.reporter}: ${output.files.join(', ')}`)
-    }
-    if (configured.site)
-      await writeReportSite(report, project.path(configured.site))
+    const outputs = await writeReporters(report, reporter, reporterOptions)
+    for (const output of outputs)
+      console.log(`${output.reporter}: ${output.files.join(', ')}`)
     if (history)
       await saveReport(report, history)
     console.log(`${report.summary.total} URLs: ${report.summary.reachable} reachable, ${report.summary.restricted} restricted, ${report.summary.unavailable} unavailable`)
@@ -183,7 +183,7 @@ export async function runReportCli(args = process.argv.slice(3)): Promise<number
 Render saved data through selected reporters without making any site-check requests.
 --reporter accepts json, markdown, html; repeat it or separate names with commas.
 With no configured selection, export the HTML static viewer.
-With an input report, write index.html and report.json. The hosted viewer loads
+HTML folders with input write index.html and report.json. The hosted viewer loads
 report.json on each visit; opening index.html as a local file uses its embedded snapshot.
 Without input, only HTML is available: an empty viewer with file upload and URL loading.
 --config loads a project config; CLI arguments override config values.
@@ -215,11 +215,13 @@ Exit codes: 0 = exported; 2 = invalid input or execution error.`)
           const [name, options] = typeof entry === 'string' ? [entry] : entry
           return name === 'html' ? ['html', { ...options, dataUrl: values['data-url'] }] as const : entry
         })
-    const outputs = await writeReporters(report, selected, {
+    const reporterOptions = {
       cwd: project.path('.'),
       outputDir: resolve(values.output ?? (configured.output ? project.path(configured.output) : 'reports/site')),
       dataUrl: values['data-url'] ?? configured.dataUrl,
-    })
+    }
+    await protectInputs(planReporters(selected, reporterOptions), input ? [{ file: input, jsonOnly: true }] : [])
+    const outputs = await writeReporters(report, selected, reporterOptions)
     for (const output of outputs)
       console.log(`${output.reporter}: ${output.files.join(', ')}`)
     return 0
@@ -238,4 +240,31 @@ function selectReporters(cli: string[] | undefined, configured?: ReporterConfig)
   if (names.some(name => !['json', 'markdown', 'html'].includes(name)))
     throw new TypeError('--reporter must select json, markdown, or html.')
   return names as ReporterName[]
+}
+
+/** Keep a mistaken output path from destroying the inputs used by this command. */
+async function protectInputs(plan: ReturnType<typeof planReporters>, inputs: { file: string, jsonOnly: boolean }[], history?: string) {
+  const identity = async (file: string) => {
+    try {
+      return await realpath(file)
+    }
+    catch (error) {
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT')
+        return resolve(file)
+      throw error
+    }
+  }
+  const writes = plan.flatMap(item => [
+    { file: item.file, reporter: item.reporter },
+    ...(item.json ? [{ file: item.json, reporter: 'json' }] : []),
+  ])
+  if (history)
+    writes.push({ file: history, reporter: 'json' })
+  for (const input of inputs) {
+    const source = await identity(input.file)
+    for (const output of writes) {
+      if ((await identity(output.file)) === source && (!input.jsonOnly || output.reporter !== 'json'))
+        throw new Error(`Reporter/history output would overwrite input ${input.file}; choose another output path.`)
+    }
+  }
 }

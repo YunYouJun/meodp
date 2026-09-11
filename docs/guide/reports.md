@@ -52,18 +52,35 @@ Starting with 0.2.0, use `reporter` in `meodp.config.ts` to select JSON, Markdow
 ```ts
 import { defineConfig } from 'meodp/config'
 
+const reportFile = 'reports/data.json'
+
 export default defineConfig({
-  reporter: [
-    ['json', { outputFile: 'reports/data.json' }],
-    ['markdown', { outputFile: 'reports/summary.md' }],
-    ['html', { outputFolder: 'reports/site' }],
-  ],
-  check: { input: 'links.yml' },
-  report: { input: 'reports/data.json' },
+  check: {
+    input: 'links.yml',
+    reporter: [
+      ['json', { outputFile: reportFile }],
+      ['markdown', { outputFile: 'reports/summary.md' }],
+    ],
+  },
+  report: {
+    input: reportFile,
+    reporter: [['html', { outputFolder: 'dist/status' }]],
+  },
 })
 ```
 
-A single name (`reporter: 'json'`), names (`reporter: ['json', 'markdown']`), and mixed names / tuples are supported. Wrap tuples in the outer array. `reporter: []` disables report artifacts; checks and separately configured history still run.
+`reporter` describes **output**, while `report` configures the **`meodp report` command**. Run `meodp check` to write JSON and Markdown, then `meodp report` to read that JSON and export HTML. The second command never checks sites again.
+
+| Setting              | Role                                                     |
+| -------------------- | -------------------------------------------------------- |
+| `check.reporter`     | Formats and destinations produced by a fresh check       |
+| `report.input`       | Saved JSON read by `meodp report`                        |
+| `report.reporter`    | Formats and destinations produced from that saved JSON   |
+| Top-level `reporter` | Shared defaults for commands without their own selection |
+
+The example reuses `reportFile` because one command writes it and another reads it. The input is explicit: a check may write several JSON files or none, and an export may read a downloaded report from another run. A check-only project does not need a `report` section.
+
+A single name (`reporter: 'json'`), names (`reporter: ['json', 'markdown']`), and mixed names / tuples are supported. Wrap tuples in the outer array. `reporter: []` disables those reporters; checks, separately configured history, and an explicit legacy `site` export still run.
 
 ```bash
 meodp check links.yml --reporter=json,markdown,html --output reports/check
@@ -99,6 +116,8 @@ export default defineConfig({
 Explicit tuple `outputFile` / `outputFolder` paths are relative to the config file and take precedence over the default directory. `--output` overrides the command's `output` directory for reporters without explicit paths; CLI paths are relative to the working directory. To redirect all outputs, supply both `--reporter` and `--output`. `--data-url` overrides all HTML data URLs; otherwise each HTML tuple overrides `report.dataUrl`.
 
 Without any reporter selection, checks retain the three files below and `report` retains its static site export. Default output directories remain `reports/meodp` for checks and `reports/site` for `report`. Invalid reporters/options and overlapping output paths fail before a scan or any report writes. JSON and HTML may share `report.json` because both write the same data. Selecting fewer formats leaves old files in place; use a fresh directory for a clean export. History and notification inputs require JSON independently of the selected artifacts.
+
+The CLI rejects outputs that would overwrite the link input file, or replace a saved input/history JSON with Markdown or HTML. Rewriting report JSON as JSON is allowed. The legacy `site` option participates in the same output-path validation; prefer HTML reporter tuples for new configurations.
 
 For library use, `writeReporters(report, reporter, { outputDir?, cwd?, dataUrl? })` from `meodp/check` accepts the same selection and returns `{ reporter, files }[]`. Omit the report only for HTML templates. `formatReport()`, `writeReports()`, and `writeReportSite()` remain available with their existing behavior.
 
