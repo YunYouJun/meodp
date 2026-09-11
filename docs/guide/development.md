@@ -59,6 +59,8 @@ The [public documentation](https://yunyoujun.github.io/meodp/) is deployed by `d
 
 ## Release to npm
 
+Before publishing, `pnpm --filter meodp verify:package` builds and installs the npm tarball in a temporary consumer project. It checks public ESM / CommonJS imports and configured CLI commands without optional browser or mail clients, and rejects high or critical production dependency audit findings. This check runs in CI and before npm publication and requires registry access.
+
 The `release.yml` workflow publishes only `packages/meodp` when a GitHub Release is **published**. Ordinary pushes and draft releases do not publish. The release tag must equal `v` plus the package version. Stable versions use npm's `latest` tag; versions such as `0.2.0-beta.1` require a GitHub prerelease and use `next`.
 
 Configure a GitHub Actions trusted publisher in the [npm package settings](https://www.npmjs.com/package/meodp/access):

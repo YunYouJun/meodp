@@ -57,8 +57,8 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Test HTTP checks and sitemap discovery
         run: pnpm test
-      - name: Build package
-        run: pnpm build
+      - name: Verify installable package and production dependencies
+        run: pnpm --filter meodp verify:package
       - name: Verify workspace CLI
         run: pnpm exec meodp --help
       - name: Build bilingual documentation
