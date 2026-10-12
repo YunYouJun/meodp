@@ -3,16 +3,27 @@ name: Release
 on:
   release:
     types: [published]
+  # One-shot trigger for the explicitly authorized 0.2.3 publish; remove afterward.
+  push:
+    branches: [main]
+    paths: [.github/workflows/release.yml]
 
 permissions:
   contents: read
 
 concurrency:
-  group: npm-release-${{ github.event.release.tag_name }}
+  group: npm-release-${{ github.event.release.tag_name || 'v0.2.3' }}
   cancel-in-progress: false
 
 jobs:
   publish:
+    if: >-
+      github.event_name == 'release' ||
+      (github.event_name == 'push' &&
+      github.repository == 'YunYouJun/meodp' &&
+      github.ref == 'refs/heads/main' &&
+      github.event.before == 'd777bd1761bc1d1f4144adce18d3b53790e9ea5c' &&
+      startsWith(github.event.head_commit.message, 'ci: publish meodp 0.2.3 with OIDC'))
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -20,7 +31,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ github.event_name == 'push' && github.sha || github.event.release.tag_name }}
           persist-credentials: false
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
@@ -32,12 +43,25 @@ jobs:
       - name: Validate release version and channel
         id: release
         env:
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
-          PRERELEASE: ${{ github.event.release.prerelease }}
+          RELEASE_TAG: ${{ github.event_name == 'push' && 'v0.2.3' || github.event.release.tag_name }}
+          PRERELEASE: ${{ github.event_name == 'push' && 'false' || github.event.release.prerelease }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           node --input-type=module <<'JS'
           import { appendFileSync, readFileSync } from 'node:fs'
           const { name, version } = JSON.parse(readFileSync('packages/meodp/package.json', 'utf8'))
+          if (process.env.GITHUB_EVENT_NAME === 'push') {
+            if (process.env.GITHUB_REPOSITORY !== 'YunYouJun/meodp'
+              || process.env.GITHUB_REF !== 'refs/heads/main'
+              || process.env.PUSH_BEFORE !== 'd777bd1761bc1d1f4144adce18d3b53790e9ea5c'
+              || process.env.PUSH_MESSAGE?.split('\n')[0] !== 'ci: publish meodp 0.2.3 with OIDC'
+              || version !== '0.2.3')
+              throw new Error('This push is not the authorized one-time meodp 0.2.3 release')
+          }
+          else if (process.env.GITHUB_EVENT_NAME !== 'release') {
+            throw new Error('Unsupported release event')
+          }
           if (name !== 'meodp' || process.env.RELEASE_TAG !== `v${version}`)
             throw new Error('Release tag must equal v + packages/meodp/package.json version')
           const prerelease = version.includes('-')
