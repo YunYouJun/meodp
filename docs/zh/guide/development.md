@@ -61,6 +61,10 @@ DOCS_BASE=/meodp/ pnpm docs:build
 
 发布前执行 `pnpm --filter meodp verify:package`，构建并将 npm tarball 安装到临时消费项目，在不安装可选浏览器和邮件客户端的情况下检查 ESM / CommonJS 公开入口及配置驱动的 CLI。生产依赖审计存在 high / critical 告警时会失败。此步骤在 CI 和 npm 发布前执行，需要访问 registry。
 
+包验证还覆盖 TypeScript 5.0.4、5.6.3、5.9.3、6.0.3 和 7.0.2：逐个编译器检查 NodeNext 与 Bundler 模块解析下的轻量子路径消费端声明、配置类型推断和无效参数报错，并在不安装可选客户端的情况下运行 TypeScript 配置驱动的 check/report。完整的开发源码与测试工程另外使用 5.6.3 及更新版本检查；其中的 DOM 测试使用了 5.0 标准库尚未包含的 API。最初的冒烟测试完全不安装 TypeScript。所有检查使用空的本地输入，不扫描外部网站。
+
+TypeScript 是消费端的可选 peer。运行时通过 `c12` 加载配置，不使用 TypeScript 编译器 API。工作区显式保留 TypeScript 5.6，供 unbuild 声明生成、ESLint 和 Vue 工具使用；消费端兼容性则通过独立安装的编译器验证。TypeScript 7 移除了旧编译器 API，因此不能仅因 MEODP 接受新版就把这些构建工具的编译器也替换为 7。应用需要同时使用原生编译器和旧编译器 API 时，可参考微软的[并行安装说明](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/#running-side-by-side-with-typescript-6.0)。
+
 `release.yml` 只在 GitHub Release **正式发布**时发布 `packages/meodp`，普通 push 和草稿 Release 不会触发。Release tag 必须等于 `v` 加包版本号。稳定版本使用 npm 的 `latest` 标签；例如 `0.2.0-beta.1` 必须对应 GitHub 预发布，并使用 `next` 标签。
 
 在 [npm 包设置](https://www.npmjs.com/package/meodp/access) 中添加 GitHub Actions Trusted Publisher：

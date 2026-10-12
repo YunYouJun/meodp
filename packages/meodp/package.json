@@ -108,7 +108,7 @@
   "peerDependencies": {
     "nodemailer": "^10.0.3",
     "playwright": "^1",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0 || ^6.0.0 || ^7.0.0"
   },
   "peerDependenciesMeta": {
     "nodemailer": {
@@ -151,6 +151,7 @@
     "nodemailer": "^10.0.3",
     "playwright": "^1.48.2",
     "tsx": "^4.19.2",
+    "typescript": "~5.6.3",
     "unbuild": "^2.0.0",
     "vite-node": "^2.1.4"
   },

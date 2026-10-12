@@ -83,7 +83,7 @@ async function readDocument(source: string, options: ReturnType<typeof discovery
             reader.releaseLock()
           }
         }
-        let body = Buffer.concat(chunks)
+        let body: Buffer = Buffer.concat(chunks)
         if (body[0] === 0x1F && body[1] === 0x8B) {
           try {
             body = await unzip(body, { maxOutputLength: options.maxSitemapBytes })

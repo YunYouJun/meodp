@@ -16,6 +16,12 @@ Guides: [English](https://yunyoujun.github.io/meodp/guide/quick-start.html) · [
 pnpm add meodp
 ```
 
+### TypeScript compatibility
+
+TypeScript is optional. MEODP supports TypeScript 5, 6, and 7 consumers; its CLI loads TypeScript configuration files through `c12` without importing the TypeScript compiler API. Plain JavaScript and CLI users do not need to install TypeScript.
+
+The repository keeps a TypeScript 5 compiler for build, lint, and Vue tooling that still uses the legacy compiler API. TypeScript 7 does not provide that API, so updating MEODP's peer range does not make unrelated compiler plugins or `typescript-eslint` compatible with TypeScript 7. See Microsoft's [side-by-side compiler guidance](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/#running-side-by-side-with-typescript-6.0) when your application needs both.
+
 ## Library
 
 ```ts

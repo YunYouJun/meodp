@@ -248,7 +248,7 @@ async function loadUrl(source: string, automatic = false) {
     if (!response.body)
       throw new Error('数据为空')
     const reader = response.body.getReader()
-    const chunks: Uint8Array[] = []
+    const chunks: BlobPart[] = []
     let size = 0
     while (true) {
       const { done, value } = await reader.read()
